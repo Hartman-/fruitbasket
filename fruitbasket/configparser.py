@@ -3,7 +3,8 @@ import os
 
 CONFIG_FILES = ['settings/applications.conf']
 
-config = ConfigParser.ConfigParser()
+config = ConfigParser.SafeConfigParser()
+
 
 def readfile():
     config.read(CONFIG_FILES)
@@ -23,6 +24,11 @@ def get_config_value(section, option):
         print 'No Section: %s Exists' % section
         return None
 
+
 def get_sections():
     readfile()
     return config.sections()
+
+
+if __name__ == "__main__":
+    print get_config_value('nuke', 'exe')

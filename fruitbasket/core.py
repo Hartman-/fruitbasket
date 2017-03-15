@@ -1,6 +1,8 @@
 import os
 import sys
 import subprocess
+import configparser as config
+
 
 class Application(object):
     """
@@ -13,10 +15,11 @@ class Application(object):
         self.app = app
         self.file = None
         self.project = None
-        self.script = None
+        self.script = 0
 
         self.arguments = {}
 
+        self.path = None
         self.setpath(path)
 
     def setpath(self, path=None):
@@ -54,6 +57,27 @@ class Application(object):
                         args.append(value)
 
         return args
+
+
+class Maya(Application):
+
+    def __init__(self, parent=None):
+        super(Maya, self).__init__(parent)
+        self.path = config.get_config_value('maya', 'exe')
+
+
+class Nuke(Application):
+
+    def __init__(self, parent=None):
+        super(Nuke, self).__init__(parent)
+        self.path = config.get_config_value('nuke', 'exe')
+
+
+class Houdini(Application):
+
+    def __init__(self, parent=None):
+        super(Houdini, self).__init__(parent)
+        pass
 
 
 if __name__ == "__main__":
