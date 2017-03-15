@@ -1,0 +1,63 @@
+import os
+import sys
+import subprocess
+
+class Application(object):
+    """
+    Class to define individual applications
+    Include funtions:
+    - run
+    - version / build data
+    """
+    def __init__(self, app=None, path=None):
+        self.app = app
+        self.file = None
+        self.project = None
+        self.script = None
+
+        self.arguments = {}
+
+        self.setpath(path)
+
+    def setpath(self, path=None):
+        if path is not None:
+            self.path = path
+
+    def setfile(self, file=None):
+        if file is not None:
+            self.file = file
+
+    def run(self):
+        args = [self.path] + self.args()
+        print args
+        subprocess.Popen(args)
+
+    def version(self):
+        pass
+
+    def args(self):
+
+        self.arguments = {
+            'maya': {'-file': self.file,
+                     '-proj': self.project,
+                     '-script': self.script},
+            'nuke': {'--nukex': self.file}
+        }
+
+        args = []
+
+        if self.app is not None:
+            if self.app.lower() in self.arguments:
+                for key, value in self.arguments[self.app.lower()].iteritems():
+                    if value is not None:
+                        args.append(key)
+                        args.append(value)
+
+        return args
+
+
+if __name__ == "__main__":
+    app_maya = Application(app='Maya')
+    app_maya.setpath("C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\maya.exe")
+    app_maya.setfile("C:\\Users\\IanHartman\\Desktop\\shaderbuilder.ma")
+    app_maya.run()
