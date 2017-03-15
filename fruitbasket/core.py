@@ -63,21 +63,21 @@ class Maya(Application):
 
     def __init__(self, parent=None):
         super(Maya, self).__init__(parent)
-        self.path = config.get_config_value('maya', 'exe')
+        self.path = config.value('maya', 'win')
 
 
 class Nuke(Application):
 
     def __init__(self, parent=None):
         super(Nuke, self).__init__(parent)
-        self.path = config.get_config_value('nuke', 'exe')
+        self.path = config.value('nuke', 'win')
 
 
 class Houdini(Application):
 
     def __init__(self, parent=None):
         super(Houdini, self).__init__(parent)
-        pass
+        self.path = config.value('houdini', 'win')
 
 
 if __name__ == "__main__":

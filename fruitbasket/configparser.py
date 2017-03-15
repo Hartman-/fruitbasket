@@ -10,7 +10,7 @@ def readfile():
     config.read(CONFIG_FILES)
 
 
-def get_config_value(section, option):
+def value(section, option):
     readfile()
 
     if config.has_section(section):
@@ -31,4 +31,4 @@ def get_sections():
 
 
 if __name__ == "__main__":
-    print get_config_value('nuke', 'exe')
+    print value('nuke', 'exe')
