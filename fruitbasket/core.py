@@ -5,15 +5,13 @@ import configparser as config
 
 
 class Application(object):
-    """
-    Class to define individual applications
-    Include funtions:
-    - run
-    - version / build data
-    """
+
     def __init__(self, app=None):
         self.app = app
+
         self.file = None
+        self.fileExists = False
+
         self.project = None
         self.script = None
         self.version = None
@@ -21,15 +19,20 @@ class Application(object):
         self.arguments = {}
 
         self.path = None
+        self.pathExists = False
 
     def setpath(self, path=None):
-        if path is not None:
+        if path is not None and os.path.isfile(path):
             self.path = path
+            self.pathExists = True
             config.setvalue(self.app.lower(), 'mac', self.path)
 
     def setfile(self, file=None):
-        if file is not None:
+        if file is not None and os.path.isfile(file):
             self.file = file
+            self.fileExists = True
+        else:
+            print('NO FILE SIR')
 
     def setversion(self, version=None):
         if version is not None:
@@ -106,5 +109,7 @@ if __name__ == "__main__":
     # app_maya.run()
     app_hou = Houdini()
     app_nuke = Nuke()
+
+    app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
     print app_hou.args()
     print app_nuke.args()
