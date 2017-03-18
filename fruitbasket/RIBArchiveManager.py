@@ -12,6 +12,9 @@ from shiboken import wrapInstance
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 
 
+import subprocess
+
+
 def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(long(main_window_ptr), QtGui.QMainWindow)
@@ -230,6 +233,13 @@ class ArchiveListWidget(QtGui.QListWidget):
     def menuPreviewClicked(self):
         currentItemName = str(allArchives()[int(self.currentRow())]['name'])
         print('Preview: %s' % currentItemName)
+
+        cmd = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
+        args = ['/Users/ianhartman/fruitbasket/fruitbasket/RIBArchivePreview.py', '/Users/ianhartman/Desktop/images']
+
+        process = QtCore.QProcess()
+        process.start(cmd, args)
+
         self.refreshList(allArchives())
 
     def menuRemoveClicked(self):
@@ -251,8 +261,8 @@ class ListItem(QtGui.QWidget):
         if int(label_count.text().replace("Count: ", "")) > 0:
             isLoaded = True
         label_loaded = QtGui.QLabel('Loaded: %s' % str(isLoaded))
-        
-        
+
+
         layout = QtGui.QVBoxLayout()
         layout.addWidget(title)
         layout.addWidget(label_loaded)

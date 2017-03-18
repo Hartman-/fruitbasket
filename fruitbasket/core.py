@@ -107,9 +107,14 @@ class Houdini(Application):
 if __name__ == "__main__":
     # app_maya = Maya()
     # app_maya.run()
-    app_hou = Houdini()
-    app_nuke = Nuke()
+    # app_hou = Houdini()
+    # app_nuke = Nuke()
+    #
+    # app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
+    # print app_hou.args()
+    # print app_nuke.args()
 
-    app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
-    print app_hou.args()
-    print app_nuke.args()
+    args = ['/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy',
+            '/Users/ianhartman/fruitbasket/fruitbasket/RIBArchivePreview.py', '/Users/ianhartman/Desktop/images', 'archive01']
+    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    ret, err = p.communicate()
