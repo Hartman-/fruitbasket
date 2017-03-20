@@ -12,9 +12,6 @@ from shiboken import wrapInstance
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 
 
-import subprocess
-
-
 def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(long(main_window_ptr), QtGui.QMainWindow)
@@ -206,9 +203,15 @@ class ArchiveListWidget(QtGui.QListWidget):
 
     def refreshList(self, adict, isize=None):
         print("ArchiveManager: Reloading")
-        isize = isize or self.currentimgsize
+
+        imgsize = 0
+        if isize != self.currentimgsize:
+            imgsize = isize
+        else:
+            imgsize = self.currentimgsize
+
         self.purgeList()
-        self.addNewItems(adict, isize=int(isize))
+        self.addNewItems(adict, isize=int(imgsize))
 
     def listItemRightClicked(self, QPos):
         self.listMenu = QtGui.QMenu()
@@ -251,13 +254,18 @@ class ArchiveListWidget(QtGui.QListWidget):
 
         archive_path = allArchives()[int(self.currentRow())]['fullpath']
 
-        cmd = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
+        app_path = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
+        exe_path = 'C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\mayapy.exe'
+
+        cmd = exe_path
         args = [rel_path,
                 dir_path,
-                currentItemName,
+                currentItemName.replace('RibArchiveShape', ""),
                 archive_path]
         process = QtCore.QProcess(self)
         process.start(cmd, args)
+        process.waitForFinished()
+        print(process.readAll())
 
         process.finished.connect(self.postPreview)
 
@@ -283,7 +291,7 @@ class ListItem(QtGui.QWidget):
         title = QtGui.QLabel(archiveName)
         label_count = QtGui.QLabel('Count: %s' % str(self.count(adict['fullpath'])))
 
-        self.img_path = self.findmap(adict['name'])
+        self.img_path = self.findmap(adict['name'].replace('RibArchiveShape', ''))
 
         self.label_img = QtGui.QLabel()
         self.pixmap = QtGui.QPixmap(self.img_path)
@@ -323,11 +331,11 @@ class ListItem(QtGui.QWidget):
 
     def findmap(self, name):
         base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images')
-        search = os.path.join(base_path, '*.jpg')
+        search = os.path.join(base_path, '*.tif')
         images = sorted(glob(search))
         for i, img in enumerate(images):
             filename = os.path.basename(img)
-            if filename == name+'.jpg':
+            if filename == name+'.tif':
                 return img
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images/placeholder.jpg')
 
