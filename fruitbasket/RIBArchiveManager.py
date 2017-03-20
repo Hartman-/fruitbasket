@@ -114,7 +114,7 @@ class ManagerWindow(MayaQWidgetDockableMixin, QtGui.QDialog):
 
     def __init__(self, parent=None):
         # Delete any previous instances that is detected. Do this before parenting self to main window!
-        self.deleteInstances()
+        # self.deleteInstances()
 
         super(self.__class__, self).__init__(parent=parent)
         self.mayaMainWindow = maya_main_window()
@@ -130,6 +130,12 @@ class ManagerWindow(MayaQWidgetDockableMixin, QtGui.QDialog):
         self.btn_refresh = QtGui.QPushButton("Refresh")
         self.btn_refresh.pressed.connect(self.updateList)
 
+        self.select_size = QtGui.QComboBox()
+        self.select_size.addItem('Small Icon')
+        self.select_size.addItem('Medium Icon')
+        self.select_size.addItem('Large Icon')
+        self.select_size.addItem('Extra Large Icon')
+
         self.list = ArchiveListWidget()
 
         self.list.addNewItems(allArchives())
@@ -140,10 +146,12 @@ class ManagerWindow(MayaQWidgetDockableMixin, QtGui.QDialog):
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.addWidget(self.label)
+        self.mainLayout.addWidget(self.select_size)
         self.mainLayout.addWidget(self.btn_refresh)
         self.mainLayout.addWidget(self.list)
         self.setLayout(self.mainLayout)
 
+    '''
     # If it's floating or docked, this will run and delete it self when it closes.
     # You can choose not to delete it here so that you can still re-open it through the right-click menu, but do disable any callbacks/timers that will eat memory
     def dockCloseEventTriggered(self):
@@ -167,37 +175,40 @@ class ManagerWindow(MayaQWidgetDockableMixin, QtGui.QDialog):
                     obj.deleteLater()
 
                     # Show window with docking ability
-
+    '''
     def run(self):
         self.show(dockable=True)
 
     def updateList(self):
-        self.list.refreshList(allArchives())
+        self.list.refreshList(allArchives(), self.select_size.currentIndex())
 
 
 class ArchiveListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
         super(ArchiveListWidget, self).__init__(parent)
-        pass
+        self.currentimgsize = 0
 
-    def addNewItems(self, adict):
+    def addNewItems(self, adict, isize=0):
+        if isize != self.currentimgsize:
+            self.currentimgsize = isize
+
         for key, value in adict.iteritems():
             itemN = QtGui.QListWidgetItem()
-            widg = ListItem(value)
+            widg = ListItem(value, isize=self.currentimgsize)
 
             itemN.setSizeHint(widg.sizeHint())
 
             self.addItem(itemN)
             self.setItemWidget(itemN, widg)
-        	# self.addItem("%s: %s" % (key, value['name']))
 
     def purgeList(self):
         self.clear()
 
-    def refreshList(self, adict):
+    def refreshList(self, adict, isize=None):
         print("ArchiveManager: Reloading")
+        isize = isize or self.currentimgsize
         self.purgeList()
-        self.addNewItems(adict)
+        self.addNewItems(adict, isize=int(isize))
 
     def listItemRightClicked(self, QPos):
         self.listMenu = QtGui.QMenu()
@@ -234,23 +245,37 @@ class ArchiveListWidget(QtGui.QListWidget):
         currentItemName = str(allArchives()[int(self.currentRow())]['name'])
         print('Preview: %s' % currentItemName)
 
-        cmd = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
-        args = ['/Users/ianhartman/fruitbasket/fruitbasket/RIBArchivePreview.py', '/Users/ianhartman/Desktop/images']
+        # store the images relative to the location of the file
+        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+        rel_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RIBArchivePreview.py')
 
-        process = QtCore.QProcess()
+        archive_path = allArchives()[int(self.currentRow())]['fullpath']
+
+        cmd = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
+        args = [rel_path,
+                dir_path,
+                currentItemName,
+                archive_path]
+        process = QtCore.QProcess(self)
         process.start(cmd, args)
 
-        self.refreshList(allArchives())
+        process.finished.connect(self.postPreview)
 
     def menuRemoveClicked(self):
         currentItemName = str(allArchives()[int(self.currentRow())]['name'])
         print('Remove: %s' % currentItemName)
         self.refreshList(allArchives())
 
+    def postPreview(self):
+        self.refreshList(allArchives())
+
 
 class ListItem(QtGui.QWidget):
-    def __init__(self, adict, parent=None):
+    def __init__(self, adict, isize, parent=None):
         super(ListItem, self).__init__(parent)
+
+        # Image sizes
+        width = [25, 50, 100, 200]
 
         archiveName = str(adict['name'].replace('RibArchiveShape', ""))
         isLoaded = False
@@ -258,23 +283,34 @@ class ListItem(QtGui.QWidget):
         title = QtGui.QLabel(archiveName)
         label_count = QtGui.QLabel('Count: %s' % str(self.count(adict['fullpath'])))
 
+        self.img_path = self.findmap(adict['name'])
+
+        self.label_img = QtGui.QLabel()
+        self.pixmap = QtGui.QPixmap(self.img_path)
+        self.pixmap = self.pixmap.scaled(width[isize], width[isize], QtCore.Qt.KeepAspectRatio)
+        self.label_img.setPixmap(self.pixmap)
+
         if int(label_count.text().replace("Count: ", "")) > 0:
             isLoaded = True
         label_loaded = QtGui.QLabel('Loaded: %s' % str(isLoaded))
 
+        wrapper = QtGui.QHBoxLayout()
+        wrapper.setAlignment(QtCore.Qt.AlignLeft)
 
         layout = QtGui.QVBoxLayout()
         layout.addWidget(title)
         layout.addWidget(label_loaded)
         layout.addWidget(label_count)
-        layout.addStretch()
+        layout.setAlignment(QtCore.Qt.AlignLeft)
+
+        wrapper.addWidget(self.label_img)
+        wrapper.addLayout(layout)
 
         layout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
-        self.setLayout(layout)
+        self.setLayout(wrapper)
 
     def count(self, opath):
         count = 0
-        prevfile = ''
         archiveNodes = cmds.ls(type='RenderManArchive')
 
         for i, n in enumerate(archiveNodes):
@@ -285,8 +321,17 @@ class ListItem(QtGui.QWidget):
 
         return count
 
+    def findmap(self, name):
+        base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images')
+        search = os.path.join(base_path, '*.jpg')
+        images = sorted(glob(search))
+        for i, img in enumerate(images):
+            filename = os.path.basename(img)
+            if filename == name+'.jpg':
+                return img
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images/placeholder.jpg')
 
 
-
-myWin = ManagerWindow()
-myWin.run()
+def main():
+    myWin = ManagerWindow()
+    myWin.run()
