@@ -3,6 +3,7 @@ import maya.mel as mel
 import maya.OpenMayaUI as omui
 
 import os
+import platform
 from glob import glob
 
 from PySide import QtCore, QtGui
@@ -10,6 +11,14 @@ from PySide import QtCore, QtGui
 from shiboken import wrapInstance
 
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
+
+
+def mayapypath():
+    osdict = {'windows': 'C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\mayapy.exe',
+              'darwin': '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy',
+              'linux': '/usr/autodesk/maya20116.5-x64/bin/mayapy'}
+    curos = platform.system().lower()
+    return osdict[curos]
 
 
 def maya_main_window():
@@ -254,10 +263,7 @@ class ArchiveListWidget(QtGui.QListWidget):
 
         archive_path = allArchives()[int(self.currentRow())]['fullpath']
 
-        app_path = '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/mayapy'
-        exe_path = 'C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\mayapy.exe'
-
-        cmd = exe_path
+        cmd = mayapypath()
         args = [rel_path,
                 dir_path,
                 currentItemName.replace('RibArchiveShape', ""),

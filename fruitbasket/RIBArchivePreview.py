@@ -3,9 +3,18 @@ maya.standalone.initialize()
 import maya.cmds as cmds
 import maya.mel as mel
 import os
+import platform
 import shutil
 import sys
 import subprocess
+
+
+def renderpath():
+    osdict = {'windows': 'C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\Render.exe',
+              'darwin': '/Applications/Autodesk/maya2016.5/Maya.app/Contents/bin/Render',
+              'linux': '/usr/autodesk/maya20116.5-x64/bin/render'}
+    curos = platform.system().lower()
+    return osdict[curos]
 
 
 def main(imgpath, imgname, archivepath):
@@ -68,7 +77,7 @@ def main(imgpath, imgname, archivepath):
     cmds.file(rename=filepath)
     cmds.file(save=True, type='mayaAscii')
 
-    subprocess.call('"C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\Render.exe" -renderer rman -fnc name.ext -res 500 500 -of Tiff8 -im %s -rd "%s" "%s"' % (imgname, os.path.join(imgpath, 'images'), filepath))
+    subprocess.call('"%s" -renderer rman -fnc name.ext -res 500 500 -of Tiff8 -im %s -rd "%s" "%s"' % (renderpath(), imgname, os.path.join(imgpath, 'images'), filepath))
 
     # Clean up useless folders and files
     os.path.join(imgpath, 'renderData'),
