@@ -99,6 +99,17 @@ def updateArchive(adict):
     mel.eval('rmanCreateRIBArchivesOptions(1);')
 
 
+def findmap(name):
+    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images')
+    search = os.path.join(base_path, '*.tif')
+    images = sorted(glob(search))
+    for i, img in enumerate(images):
+        filename = os.path.basename(img)
+        if filename == name+'.tif':
+            return img
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images/missing.png')
+
+
 # ----------------------------------------------------------------------------------------------------
 # UI
 # ----------------------------------------------------------------------------------------------------
@@ -182,19 +193,46 @@ class ArchiveListWidget(QtGui.QListWidget):
         super(ArchiveListWidget, self).__init__(parent)
         self.currentimgsize = 0
         self.threadPool = QtCore.QThreadPool.globalInstance()
+        self.setDragEnabled(False)
+
+        self.largeFont = QtGui.QFont()
+        self.largeFont.setPointSize(12)
 
     def addNewItems(self, adict, isize=0):
+        width = [25, 50, 100, 200]
+
         if isize != self.currentimgsize:
             self.currentimgsize = isize
 
+        self.iconMode(self.currentimgsize)
+
         for key, value in adict.iteritems():
             itemN = QtGui.QListWidgetItem()
-            widg = ListItem(value, isize=self.currentimgsize)
+            if self.currentimgsize > 1:
+                name = value['name'].replace('RibArchiveShape', '')
+                img_path = findmap(name)
+                itemN.setIcon(QtGui.QIcon(img_path))
+                itemN.setText(name)
 
-            itemN.setSizeHint(widg.sizeHint())
+                # only on the larger sizes
+                if self.currentimgsize > 2:
+                    itemN.setFont(self.largeFont)
 
-            self.addItem(itemN)
-            self.setItemWidget(itemN, widg)
+                self.setIconSize(QtCore.QSize(width[self.currentimgsize], width[self.currentimgsize]))
+                self.addItem(itemN)
+            else:
+                widg = ListItem(value, isize=self.currentimgsize)
+                itemN.setSizeHint(widg.sizeHint())
+                self.addItem(itemN)
+                self.setItemWidget(itemN, widg)
+
+    def iconMode(self, num):
+        if num > 1:
+            self.setViewMode(QtGui.QListView.IconMode)
+            self.setStyleSheet('QListWidget::item {border: 2px solid #333; border-radius: 5px; margin: 5px;}')
+        else:
+            self.setViewMode(QtGui.QListView.ListMode)
+            self.setStyleSheet('QListWidget::item {border: 1px solid #333; border-radius: 5px; margin: 5px;}')
 
     def purgeList(self):
         self.clear()
@@ -320,7 +358,7 @@ class ListItem(QtGui.QWidget):
         title = QtGui.QLabel(archiveName)
         label_count = QtGui.QLabel('Count: %s' % str(self.count(adict['fullpath'])))
 
-        self.img_path = self.findmap(adict['name'].replace('RibArchiveShape', ''))
+        self.img_path = findmap(adict['name'].replace('RibArchiveShape', ''))
 
         self.label_img = QtGui.QLabel()
         self.pixmap = QtGui.QPixmap(self.img_path)
@@ -357,16 +395,6 @@ class ListItem(QtGui.QWidget):
                 count += 1
 
         return count
-
-    def findmap(self, name):
-        base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images')
-        search = os.path.join(base_path, '*.tif')
-        images = sorted(glob(search))
-        for i, img in enumerate(images):
-            filename = os.path.basename(img)
-            if filename == name+'.tif':
-                return img
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images/placeholder.jpg')
 
 
 def main():
