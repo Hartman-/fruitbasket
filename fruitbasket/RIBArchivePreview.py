@@ -70,6 +70,8 @@ def main(imgpath, imgname, archivepath):
         cmds.setAttr(cam + '.rnd', 0)
     cmds.setAttr('camera1.rnd', 1)
 
+    mel.eval('rmanCreateNode -asLight "" PxrDomeLight;')
+
     # # create a single frame snapshot of the archive
     # mel.eval('render -x 500 -y 500 "camera1"')
 
@@ -77,7 +79,29 @@ def main(imgpath, imgname, archivepath):
     cmds.file(rename=filepath)
     cmds.file(save=True, type='mayaAscii')
 
-    subprocess.call('"%s" -renderer rman -fnc name.ext -res 500 500 -of Tiff8 -im %s -rd "%s" "%s"' % (renderpath(), imgname, os.path.join(imgpath, 'images'), filepath))
+    # sys.stdout.write(renderpath() + '\n')
+    # sys.stdout.write(imgname+'\n')
+    # sys.stdout.write(os.path.join(imgpath, 'images')+'\n')
+    # sys.stdout.write(filepath+'\n')
+
+    img = os.path.join(imgpath, 'images')
+    print img
+
+    subprocess.call([renderpath(),
+                     '-r',
+                     'rman',
+                     '-fnc',
+                     'name.ext',
+                     '-res',
+                     '500',
+                     '500',
+                     '-of',
+                     'Tiff8',
+                     '-im',
+                     '%s' % imgname,
+                     '-rd',
+                     '%s' % img,
+                     '%s' % filepath])
 
     # Clean up useless folders and files
     os.path.join(imgpath, 'renderData'),

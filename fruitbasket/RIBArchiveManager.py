@@ -26,10 +26,6 @@ def maya_main_window():
     return wrapInstance(long(main_window_ptr), QtGui.QMainWindow)
 
 
-# Load RenderMan
-# mel.eval('rmanLoadPlugin;')
-
-
 # Rough function to determine if it is a group
 def is_group(node):
     children = cmds.listRelatives(node, c=True)
@@ -102,14 +98,6 @@ def updateArchive(adict):
     cmds.select(adict['name'])
     mel.eval('rmanCreateRIBArchivesOptions(1);')
 
-
-# updateArchive(allArchives()[0])
-
-# CREATE & WRITE ARCHIVE
-# mel.eval('rmanCreateRIBArchivesOptions(0);')
-
-# --- Only need to load this in if rman isn't loaded
-# mel.eval('rmanLoadPlugin;')
 
 # ----------------------------------------------------------------------------------------------------
 # UI
@@ -193,6 +181,7 @@ class ArchiveListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
         super(ArchiveListWidget, self).__init__(parent)
         self.currentimgsize = 0
+        self.threadPool = QtCore.QThreadPool.globalInstance()
 
     def addNewItems(self, adict, isize=0):
         if isize != self.currentimgsize:
@@ -214,7 +203,7 @@ class ArchiveListWidget(QtGui.QListWidget):
         print("ArchiveManager: Reloading")
 
         imgsize = 0
-        if isize != self.currentimgsize:
+        if isize != self.currentimgsize and isize is not None:
             imgsize = isize
         else:
             imgsize = self.currentimgsize
@@ -226,16 +215,16 @@ class ArchiveListWidget(QtGui.QListWidget):
         self.listMenu = QtGui.QMenu()
 
         menu_import = self.listMenu.addAction("Import")
-        self.connect(menu_import, QtCore.SIGNAL("triggered()"), self.menuImportClicked)
+        menu_import.triggered.connect(self.menuImportClicked)
 
         menu_update = self.listMenu.addAction("Update")
-        self.connect(menu_update, QtCore.SIGNAL("triggered()"), self.menuUpdateClicked)
+        menu_update.triggered.connect(self.menuUpdateClicked)
 
         menu_preview = self.listMenu.addAction("Preview")
-        self.connect(menu_preview, QtCore.SIGNAL("triggered()"), self.menuPreviewClicked)
+        menu_preview.triggered.connect(self.menuPreviewClicked)
 
         menu_remove = self.listMenu.addAction("Remove Item")
-        self.connect(menu_remove, QtCore.SIGNAL("triggered()"), self.menuRemoveClicked)
+        menu_remove.triggered.connect(self.menuRemoveClicked)
 
         parentPosition = self.mapToGlobal(QtCore.QPoint(0, 0))
         self.listMenu.move(parentPosition + QPos)
@@ -258,30 +247,64 @@ class ArchiveListWidget(QtGui.QListWidget):
         print('Preview: %s' % currentItemName)
 
         # store the images relative to the location of the file
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-        rel_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RIBArchivePreview.py')
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        rel_path = os.path.join(dir_path, 'RIBArchivePreview.py')
 
         archive_path = allArchives()[int(self.currentRow())]['fullpath']
 
         cmd = mayapypath()
-        args = [rel_path,
-                dir_path,
-                currentItemName.replace('RibArchiveShape', ""),
-                archive_path]
-        process = QtCore.QProcess(self)
-        process.start(cmd, args)
-        process.waitForFinished()
-        print(process.readAll())
+        # args = [rel_path,
+        #         dir_path,
+        #         currentItemName.replace('RibArchiveShape', ""),
+        #         archive_path]
+        # process = QtCore.QProcess(self)
+        # process.start(cmd, args)
+        # process.waitForFinished()
+        # print(process.readAll())
 
-        process.finished.connect(self.postPreview)
+        preview = Previewer(cmd, rel_path, dir_path, currentItemName, archive_path)
+        self.threadPool.start(preview)
+        preview.done.connect(self.postPreview)
 
     def menuRemoveClicked(self):
         currentItemName = str(allArchives()[int(self.currentRow())]['name'])
         print('Remove: %s' % currentItemName)
         self.refreshList(allArchives())
 
-    def postPreview(self):
-        self.refreshList(allArchives())
+    def postPreview(self, status):
+        if status is True:
+            self.refreshList(allArchives())
+
+
+# Working Class for the preview threading
+class Previewer(QtCore.QObject, QtCore.QRunnable):
+
+    update = QtCore.Signal(int)
+    done = QtCore.Signal(bool)
+
+    def __init__(self, cmdpath, pypath, projpath, name, archivepath, parent=None):
+        QtCore.QObject.__init__(self, parent)
+        QtCore.QRunnable.__init__(self)
+
+        self.cmdpath = cmdpath
+        self.pypath = pypath
+        self.projpath = projpath
+        self.name = name.replace('RibArchiveShape', '')
+        self.archivepath = archivepath
+
+    # Executed, in its own thread, with the inherited 'start' function is called
+    def run(self):
+        args = [
+            self.pypath,
+            self.projpath,
+            self.name,
+            self.archivepath
+        ]
+        process = QtCore.QProcess(self)
+        process.start(self.cmdpath, args)
+        process.waitForFinished()
+        print process.readAll()
+        self.done.emit(True)
 
 
 class ListItem(QtGui.QWidget):
