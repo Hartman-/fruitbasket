@@ -15,35 +15,135 @@ pass a generated hash variable to the program
 ex. ...
 maya_%HASH%_SEQ = ABC
 maya_%HASH%_SHOT = 010
+
+Actually probably isn't needed.... The hash is a good test to show that each process can have the same
+env variable name but different values
+- Simply pass the env variables in a list with the Popen
+
+thinking about structuring the pipe as a Proj in PROJ
+
+SHOW
+    > _production
+        > DELIVERABLES
+        > HOUDINI
+        > NUKE
+        > SHOTS
+            > SEQ
+                > SHOT
+                    > NUKE 
+                    > HOUDINI
+                    > MAYA_PROJECT
+        > SOURCE
+            > PLATES
+            > ELEMENTS
+        > LIBRARY
+            > CATEGORIES
+        > PUBLISHED
+            > SEQ
+                > SHOT
+    > OTHER
 '''
 
-class Environment(object):
+
+class Setup(object):
 
     def __init__(self):
         pass
 
+
+class Environment(object):
+
+    def __init__(self):
+        self.SHOW = 'HONU'
+        self.SEQ = 'ABC'
+        self.SHOT = '010'
+
+        self.levels = [self.SHOW, self.SEQ, self.SHOT]
+
+    def setShow(self, show):
+        if show:
+            self.SHOW = str(show)
+            return 0
+        return 1
+
+    def setSeq(self, seq):
+        if seq:
+            self.SEQ = str(seq)
+            return 0
+        return 1
+
+    def setShot(self, shot):
+        if shot:
+            self.SEQ = str(shot)
+            return 0
+        return 1
+
     def os(self):
         curos = platform.system()
+        print curos
         return curos
 
-    def localdirectory(self):
+    def localroot(self, path=None):
+        if path is not None:
+            if os.path.isdir(path):
+                config.setvalue('root', 'localdir', str(path))
+                return 0
+            return 1
+
         localdir = config.value('root', 'localdir')
         if not os.path.isdir(localdir):
             raise ValueError, "[%s] Local Directory does not exist." % localdir
         return localdir
 
-    def serverdirectory(self):
+    def serverroot(self, path=None):
+        if path is not None:
+            if os.path.isdir(path):
+                config.setvalue('root', 'serverdir', str(path))
+                return 0
+            return 1
+
         serverdir = config.value('root', 'serverdir')
         if not  os.path.isdir(serverdir):
             raise ValueError, "[%s] Server Directory does not exist." % serverdir
         return serverdir
 
-    def envstr(self, app, hash, var):
-        key = '%s_%s_%s' % (str(app).upper(), str(hash), str(var).upper())
+    def directory(self, path=1, show=None, seq=None, shot=None):
+        basepath = [self.localroot(), self.serverroot()]
+
+        if show is not None:
+            if seq is not None:
+                if shot is not None:
+                    path = os.path.join(basepath[path], show, "_production\\shots", seq, shot)
+                    if not os.path.isdir(path):
+                        print 'Path [%s] does not exist' % path
+                        return 1
+                    return path
+
+                path = os.path.join(basepath[path], show, "_production\\shots", seq)
+                if not os.path.isdir(path):
+                    print 'Path [%s] does not exist' % path
+                    return 1
+                return path
+
+            path = os.path.join(basepath[path], show)
+            if not os.path.isdir(path):
+                print 'Path [%s] does not exist' % path
+                return 1
+            return path
+
+        path = os.path.join(basepath[path])
+
+        if not os.path.isdir(path):
+            print "Path [%s] does not exist" % path
+            return 1
+        return path
+
+    def envstr(self, var):
+        key = '%s' % str(var).upper()
         return key
 
-    def getenv(self, app, hash, var):
-        key = self.envstr(app, hash, var)
+    def getenv(self, var):
+        key = self.envstr(var)
         envvar = os.getenv(key)
         if not envvar:
             raise ValueError, "[%s] Environment Variable does not exist" % key
@@ -63,6 +163,7 @@ class Environment(object):
     def supportedapps(self):
         apps = config.get_sections()
         return apps
+
 
 class FileFinder(object):
 
@@ -102,8 +203,8 @@ class FileFinder(object):
 
 class Application(object):
 
-    def __init__(self, app=None):
-        self.app = app
+    def __init__(self, env):
+        self.app = None
 
         self.file = None
         self.fileExists = False
@@ -120,12 +221,13 @@ class Application(object):
         self.id = 0000
         self.rids = []
 
+        self.environment = env
 
     def setpath(self, path=None):
         if path is not None and os.path.isfile(path):
             self.path = path
             self.pathExists = True
-            config.setvalue(self.app.lower(), 'mac', self.path)
+            # config.setvalue(self.app.lower(), 'mac', self.path)
 
     def setfile(self, file=None):
         if file is not None and os.path.isfile(file):
@@ -149,8 +251,8 @@ class Application(object):
                         cid = env['HASH']
                         self.rids.append(int(cid))
 
-                        seq_str = Environment().envstr(self.app, cid, 'SEQ')
-                        shot_str = Environment().envstr(self.app, cid, 'SHOT')
+                        seq_str = self.environment.envstr('SEQ')
+                        shot_str = self.environment.envstr('SHOT')
 
                         print '%s [PID %s] %s %s:%s' % (p.name(), p.pid, cid, env[seq_str], env[shot_str])
                     else:
@@ -159,10 +261,7 @@ class Application(object):
             except psutil.Error:
                 pass
 
-    def run(self, num):
-        SEQ = 'ABC'
-        SHOT = '010'
-
+    def run(self):
         sid = self.id
         if sid not in self.rids:
             self.rids.append(sid)
@@ -175,10 +274,14 @@ class Application(object):
         print sid
         cenv['HASH'] = str(sid)
 
-        seq_str = Environment().envstr(self.app, sid, 'SEQ')
-        cenv[seq_str] = SEQ
-        shot_str = Environment().envstr(self.app, sid, 'SHOT')
-        cenv[shot_str] = SHOT
+        show_str = self.environment.envstr('SHOW')
+        cenv[show_str] = self.environment.SHOW
+
+        seq_str = self.environment.envstr('SEQ')
+        cenv[seq_str] = self.environment.SEQ
+
+        shot_str = self.environment.envstr('SHOT')
+        cenv[shot_str] = self.environment.SHOT
 
         args = self.args()
         if args:
@@ -186,7 +289,11 @@ class Application(object):
 
     def version(self):
         if self.version is None:
-            self.version = config.value(self.app, 'version')
+            ver = config.value(self.app, 'version')
+            if ver:
+                self.version = ver
+                return ver
+        return self.version
 
     def args(self):
 
@@ -226,11 +333,14 @@ class Application(object):
             return 1
         return 1
 
+    def test(self):
+        print self.environment.SHOW
+
 
 class Maya(Application):
 
-    def __init__(self, parent=None):
-        super(Maya, self).__init__(parent)
+    def __init__(self, env):
+        super(Maya, self).__init__(env)
 
         self.app = 'maya'
         self.path = config.value(self.app, 'win')
@@ -242,8 +352,8 @@ class Maya(Application):
 
 class Nuke(Application):
 
-    def __init__(self, parent=None):
-        super(Nuke, self).__init__(parent)
+    def __init__(self, env):
+        super(Nuke, self).__init__(env)
 
         self.app = 'nuke'
         self.path = config.value(self.app, 'win')
@@ -255,8 +365,8 @@ class Nuke(Application):
 
 class Houdini(Application):
 
-    def __init__(self, parent=None):
-        super(Houdini, self).__init__(parent)
+    def __init__(self, env):
+        super(Houdini, self).__init__(env)
 
         self.app = 'houdini'
         self.path = config.value(self.app, 'win')
@@ -267,12 +377,16 @@ class Houdini(Application):
 
 
 if __name__ == "__main__":
-    app_maya = Maya()
-    # app_maya.run(0)
+    environment = Environment()
+    print environment.directory(1)
+
+    app_maya = Maya(environment)
+    # app_maya.run()
     # sleep(5)
-    # app_maya.run(1)
-    app_hou = Houdini()
-    app_nuke = Nuke()
+    # app_maya.run()
+    app_hou = Houdini(environment)
+    app_nuke = Nuke(environment)
+    # app_nuke.run()
 
     # app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
     # print app_hou.args()

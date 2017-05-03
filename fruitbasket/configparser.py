@@ -1,7 +1,17 @@
 import ConfigParser
 import os
 
-CONFIG_FILES = ['settings/applications.conf']
+# Configuration files will always be relative to the parser file
+# Instead of attemping to find the path settings/application.conf relative to the file that made the call
+parserpath = os.path.dirname(os.path.abspath(__file__))
+settingspath = os.path.join(parserpath, 'settings')
+
+CONFIG_FILES = ['configuration.conf']
+
+# Only necessary to update the file name, this will append the correct path to each
+for i, f in enumerate(CONFIG_FILES):
+    CONFIG_FILES[i] = os.path.join(settingspath, f)
+
 
 config = ConfigParser.SafeConfigParser()
 
@@ -26,6 +36,8 @@ def value(section, option):
 
 
 def setvalue(section, option, value):
+    readfile()
+
     if config.has_section(section):
         if config.has_option(section, option):
             value = config.set(section, option, value)
