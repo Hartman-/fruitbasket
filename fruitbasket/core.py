@@ -1,4 +1,6 @@
+import collections
 import glob
+import json
 import os
 import platform
 import psutil
@@ -31,7 +33,7 @@ SHOW
         > SHOTS
             > SEQ
                 > SHOT
-                    > NUKE 
+                    > NUKE
                     > HOUDINI
                     > MAYA
                         > When the user saves, give them the option of stage (layout, anim, lighting, render, etc)
@@ -53,8 +55,58 @@ SHOW
 
 class Setup(object):
 
-    def __init__(self):
-        pass
+    folderschema = {
+        "_production": {
+            "deliverables": {
+                "_final": None,
+                "dailies": None
+            },
+            "houdini": None,
+            "nuke": None,
+            "edit": None,
+            "shots": None,
+            "source": {
+                "plates": None,
+                "elements": None
+            },
+            "library": {
+                "categories": None
+            },
+            "published": None
+        }
+    }
+
+    def __init__(self, environment):
+        self.env = environment
+
+    def createDir(self, path):
+        if not os.path.isdir(path):
+            newpath = os.makedirs(path)
+            return newpath
+        return 1
+
+    # a recursive function that builds lists of folder paths
+    # http://stackoverflow.com/questions/18819154/python-finding-parent-keys-for-a-specific-value-in-a-nested-dictionary
+    def keypaths(self, nested):
+        for key, value in nested.iteritems():
+            if isinstance(value, collections.Mapping):
+                for subkey, subvalue in self.keypaths(value):
+                    yield [key] + subkey, subvalue
+            else:
+                yield [key], value
+
+    def createBaseStructure(self, server=True):
+        root = environment.rootserver()
+        if server is not True:
+            root = environment.rootlocal()
+
+        for i, v in enumerate(list(self.keypaths(self.folderschema))):
+            folders = v[0]
+            relpath = ''
+            for f in folders:
+                relpath = os.path.join(relpath, f)
+            fullpath = os.path.join(root, relpath)
+            self.createDir(fullpath)
 
 
 class Environment(object):
@@ -89,7 +141,7 @@ class Environment(object):
         print curos
         return curos
 
-    def localroot(self, path=None):
+    def rootlocal(self, path=None):
         if path is not None:
             if os.path.isdir(path):
                 config.setvalue('root', 'localdir', str(path))
@@ -101,7 +153,7 @@ class Environment(object):
             raise ValueError, "[%s] Local Directory does not exist." % localdir
         return localdir
 
-    def serverroot(self, path=None):
+    def rootserver(self, path=None):
         if path is not None:
             if os.path.isdir(path):
                 config.setvalue('root', 'serverdir', str(path))
@@ -114,7 +166,7 @@ class Environment(object):
         return serverdir
 
     def directory(self, path=1, show=None, seq=None, shot=None):
-        basepath = [self.localroot(), self.serverroot()]
+        basepath = [self.rootlocal(), self.rootserver()]
 
         if show is not None:
             if seq is not None:
@@ -384,7 +436,10 @@ class Houdini(Application):
 
 if __name__ == "__main__":
     environment = Environment()
-    print environment.directory(1)
+
+    setup = Setup(environment)
+    setup.createBaseStructure()
+    setup.createBaseStructure(server=False)
 
     app_maya = Maya(environment)
     # app_maya.run()

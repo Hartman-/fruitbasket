@@ -19,5 +19,23 @@
     },
     "render": {
         "id": 99
+    },
+    "_production":{
+        "deliverables": {
+            "_final": [],
+            "dailies": []
+        },
+        "houdini": [],
+        "nuke": [],
+        "edit": [],
+        "shots": [],
+        "source": {
+            "plates": [],
+            "elements": []
+        },
+        "library": {
+            "categories": []
+        },
+        "published": []
     }
 }
