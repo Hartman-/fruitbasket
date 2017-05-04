@@ -27,12 +27,15 @@ SHOW
         > DELIVERABLES
         > HOUDINI
         > NUKE
+        > EDIT
         > SHOTS
             > SEQ
                 > SHOT
                     > NUKE 
                     > HOUDINI
-                    > MAYA_PROJECT
+                    > MAYA
+                        > When the user saves, give them the option of stage (layout, anim, lighting, render, etc)
+                        > Two tag system, one denotes the stage (integer value, pulled from defintions file), other identifies contents (ex. ABC_010_01_blockIn_v0001_imh29.ma
         > SOURCE
             > PLATES
             > ELEMENTS
@@ -41,6 +44,9 @@ SHOW
         > PUBLISHED
             > SEQ
                 > SHOT
+                    > NUKE
+                    > HOUDINI
+                    > MAYA
     > OTHER
 '''
 
@@ -387,6 +393,8 @@ if __name__ == "__main__":
     app_hou = Houdini(environment)
     app_nuke = Nuke(environment)
     # app_nuke.run()
+
+    # app_hou.run()
 
     # app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
     # print app_hou.args()

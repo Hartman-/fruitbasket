@@ -16,12 +16,19 @@ for i, f in enumerate(CONFIG_FILES):
 config = ConfigParser.SafeConfigParser()
 
 
-def readfile():
-    config.read(CONFIG_FILES)
+def readfile(name):
+    filename = name + '.conf'
+    filepath = os.path.join(settingspath, filename)
+
+    if filepath not in CONFIG_FILES:
+        print 'not here boss'
+        return 1
+
+    config.read(filepath)
 
 
-def value(section, option):
-    readfile()
+def value(section, option, name='configuration'):
+    readfile(name)
 
     if config.has_section(section):
         if config.has_option(section, option):
@@ -35,8 +42,8 @@ def value(section, option):
         return None
 
 
-def setvalue(section, option, value):
-    readfile()
+def setvalue(section, option, value, name='configuration'):
+    readfile(name)
 
     if config.has_section(section):
         if config.has_option(section, option):
@@ -54,8 +61,8 @@ def setvalue(section, option, value):
         return None
 
 
-def get_sections():
-    readfile()
+def get_sections(name='configuration'):
+    readfile(name)
     return config.sections()
 
 
