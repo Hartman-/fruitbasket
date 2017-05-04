@@ -22,20 +22,20 @@
     },
     "_production":{
         "deliverables": {
-            "_final": [],
-            "dailies": []
+            "_final": "",
+            "dailies": ""
         },
-        "houdini": [],
-        "nuke": [],
-        "edit": [],
-        "shots": [],
+        "houdini": "",
+        "nuke": "",
+        "edit": "",
+        "shots": "{{ list.shot }}",
         "source": {
-            "plates": [],
-            "elements": []
+            "plates": "",
+            "elements": ""
         },
         "library": {
-            "categories": []
+            "categories": ""
         },
-        "published": []
+        "published": "{{ list.shot }}"
     }
 }

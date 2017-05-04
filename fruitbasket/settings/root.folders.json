@@ -1,0 +1,20 @@
+{
+    "_production":{
+        "deliverables": {
+            "_final": "",
+            "dailies": ""
+        },
+        "houdini": "",
+        "nuke": "",
+        "edit": "",
+        "shots": "list.shots",
+        "source": {
+            "plates": "",
+            "elements": ""
+        },
+        "library": {
+            "categories": ""
+        },
+        "published": "list.shots"
+    }
+}

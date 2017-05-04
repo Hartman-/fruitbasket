@@ -55,6 +55,26 @@ SHOW
 
 class Setup(object):
 
+    shotschema = {
+        "houdini": None,
+        "maya": None,
+        "nuke": None
+    }
+
+    shots = {
+        "abc": {
+            "010": shotschema,
+            "020": shotschema,
+            "030": shotschema
+        },
+        "def": {
+            "010": shotschema,
+            "020": shotschema,
+            "025": shotschema,
+            "030": shotschema
+        }
+    }
+
     folderschema = {
         "_production": {
             "deliverables": {
@@ -64,7 +84,7 @@ class Setup(object):
             "houdini": None,
             "nuke": None,
             "edit": None,
-            "shots": None,
+            "shots": shots,
             "source": {
                 "plates": None,
                 "elements": None
@@ -72,7 +92,7 @@ class Setup(object):
             "library": {
                 "categories": None
             },
-            "published": None
+            "published": shots
         }
     }
 
@@ -102,11 +122,18 @@ class Setup(object):
 
         for i, v in enumerate(list(self.keypaths(self.folderschema))):
             folders = v[0]
+            print folders
             relpath = ''
             for f in folders:
                 relpath = os.path.join(relpath, f)
             fullpath = os.path.join(root, relpath)
-            self.createDir(fullpath)
+            # self.createDir(fullpath)
+
+    def createShotStructure(self):
+        # print path
+        # shotpath = os.path.join(path, seq, shot)
+        for i, v in enumerate(list(self.keypaths(self.shots))):
+            print v
 
 
 class Environment(object):
@@ -439,7 +466,8 @@ if __name__ == "__main__":
 
     setup = Setup(environment)
     setup.createBaseStructure()
-    setup.createBaseStructure(server=False)
+    # setup.createBaseStructure(server=False)
+    # setup.createShotStructure()
 
     app_maya = Maya(environment)
     # app_maya.run()

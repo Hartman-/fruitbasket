@@ -1,0 +1,13 @@
+{
+    "abc": {
+        "010": "list.folders",
+        "020": "list.folders",
+        "030": "list.folders"
+    },
+    "def": {
+        "010": "list.folders",
+        "020": "list.folders",
+        "025": "list.folders",
+        "030": "list.folders"
+    }
+}
