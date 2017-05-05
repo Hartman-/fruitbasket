@@ -1,15 +1,12 @@
-import collections
 import glob
-import json
 import os
 import platform
 import psutil
 import sys
 import subprocess
-from time import sleep
 
 import configparser as config
-
+import folderbuild
 
 '''
 Define environment variables using a syntax that denotes what program/seq/shot the variable is for
@@ -54,86 +51,15 @@ SHOW
 
 
 class Setup(object):
-
-    shotschema = {
-        "houdini": None,
-        "maya": None,
-        "nuke": None
-    }
-
-    shots = {
-        "abc": {
-            "010": shotschema,
-            "020": shotschema,
-            "030": shotschema
-        },
-        "def": {
-            "010": shotschema,
-            "020": shotschema,
-            "025": shotschema,
-            "030": shotschema
-        }
-    }
-
-    folderschema = {
-        "_production": {
-            "deliverables": {
-                "_final": None,
-                "dailies": None
-            },
-            "houdini": None,
-            "nuke": None,
-            "edit": None,
-            "shots": shots,
-            "source": {
-                "plates": None,
-                "elements": None
-            },
-            "library": {
-                "categories": None
-            },
-            "published": shots
-        }
-    }
-
     def __init__(self, environment):
         self.env = environment
-
-    def createDir(self, path):
-        if not os.path.isdir(path):
-            newpath = os.makedirs(path)
-            return newpath
-        return 1
-
-    # a recursive function that builds lists of folder paths
-    # http://stackoverflow.com/questions/18819154/python-finding-parent-keys-for-a-specific-value-in-a-nested-dictionary
-    def keypaths(self, nested):
-        for key, value in nested.iteritems():
-            if isinstance(value, collections.Mapping):
-                for subkey, subvalue in self.keypaths(value):
-                    yield [key] + subkey, subvalue
-            else:
-                yield [key], value
 
     def createBaseStructure(self, server=True):
         root = environment.rootserver()
         if server is not True:
             root = environment.rootlocal()
 
-        for i, v in enumerate(list(self.keypaths(self.folderschema))):
-            folders = v[0]
-            print folders
-            relpath = ''
-            for f in folders:
-                relpath = os.path.join(relpath, f)
-            fullpath = os.path.join(root, relpath)
-            # self.createDir(fullpath)
-
-    def createShotStructure(self):
-        # print path
-        # shotpath = os.path.join(path, seq, shot)
-        for i, v in enumerate(list(self.keypaths(self.shots))):
-            print v
+        folderbuild.createBaseStructure(self.env.SHOW, root)
 
 
 class Environment(object):
@@ -142,8 +68,6 @@ class Environment(object):
         self.SHOW = 'HONU'
         self.SEQ = 'ABC'
         self.SHOT = '010'
-
-        self.levels = [self.SHOW, self.SEQ, self.SHOT]
 
     def setShow(self, show):
         if show:
@@ -255,35 +179,7 @@ class FileFinder(object):
     def __init__(self):
         pass
 
-    def latestFile(self, app, stage, tag):
-        filetypes = 'fuck you'
-        newest = ''
 
-        # If the user passes a tag filter
-        # sadly glob doesn't seem to have a way to filter
-        if tag is not None:
-            matchedfiles = []
-
-            # Build list of files that match the tag substring
-            for file in os.listdir(config.stageDir(stage)):
-                if os.path.basename(file).find(tag) > -1:
-                    matchedfiles.append(file)
-            newest = ''
-
-            # Filter the matched list to get the newest file
-            for f in matchedfiles:
-                lasttime = os.path.getctime(os.path.join(config.stageDir(stage), newest))
-                newtime = os.path.getctime(os.path.join(config.stageDir(stage), f))
-                if newtime >= lasttime:
-                    newest = f
-
-            # rebuild the files path before returning to the launcher
-            newest = os.path.join(config.stageDir(stage), newest)
-            # if the tag exists in the file name, it returns a number
-            # if it doesnt' exist, returns -1
-        else:
-            newest = max(glob.iglob(os.path.join(config.stageDir(stage), filetypes[stage])), key=os.path.getctime)
-        return newest
 
 
 class Application(object):
@@ -320,6 +216,23 @@ class Application(object):
             self.fileExists = True
         else:
             print('NO FILE SIR')
+
+    def getFile(self):
+        testpath = "W:\\SRPJ_LAW\\working\\scenes\\ast\\010\\02. Layout"
+
+        latestFiles = []
+
+        for file_type in self.filetypes():
+            searchString = '*_%s_*%s' % ('Asteroids', file_type)
+            searchPath = os.path.join(testpath, searchString)
+
+            files = list(glob.iglob(searchPath))
+            if files:
+                latest = max(files, key=os.path.getmtime)
+                latestFiles.append(latest)
+
+        latest = max(latestFiles, key=os.path.getmtime)
+        print latest
 
     def setversion(self, version=None):
         if version is not None:
@@ -465,13 +378,10 @@ if __name__ == "__main__":
     environment = Environment()
 
     setup = Setup(environment)
-    setup.createBaseStructure()
-    # setup.createBaseStructure(server=False)
-    # setup.createShotStructure()
 
     app_maya = Maya(environment)
+    app_maya.getFile()
     # app_maya.run()
-    # sleep(5)
     # app_maya.run()
     app_hou = Houdini(environment)
     app_nuke = Nuke(environment)

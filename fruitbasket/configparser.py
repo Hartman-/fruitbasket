@@ -64,7 +64,3 @@ def setvalue(section, option, value, name='configuration'):
 def get_sections(name='configuration'):
     readfile(name)
     return config.sections()
-
-
-if __name__ == "__main__":
-    print value('nuke', 'exe')

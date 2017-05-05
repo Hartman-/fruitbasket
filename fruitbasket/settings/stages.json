@@ -19,23 +19,5 @@
     },
     "render": {
         "id": 99
-    },
-    "_production":{
-        "deliverables": {
-            "_final": "",
-            "dailies": ""
-        },
-        "houdini": "",
-        "nuke": "",
-        "edit": "",
-        "shots": "{{ list.shot }}",
-        "source": {
-            "plates": "",
-            "elements": ""
-        },
-        "library": {
-            "categories": ""
-        },
-        "published": "{{ list.shot }}"
     }
 }
