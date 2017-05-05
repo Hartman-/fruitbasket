@@ -9,14 +9,6 @@ import configparser as config
 import folderbuild
 
 '''
-Define environment variables using a syntax that denotes what program/seq/shot the variable is for
-pass a generated hash variable to the program
-ex. ...
-maya_%HASH%_SEQ = ABC
-maya_%HASH%_SHOT = 010
-
-Actually probably isn't needed.... The hash is a good test to show that each process can have the same
-env variable name but different values
 - Simply pass the env variables in a list with the Popen
 
 thinking about structuring the pipe as a Proj in PROJ
@@ -34,7 +26,7 @@ SHOW
                     > HOUDINI
                     > MAYA
                         > When the user saves, give them the option of stage (layout, anim, lighting, render, etc)
-                        > Two tag system, one denotes the stage (integer value, pulled from defintions file), other identifies contents (ex. ABC_010_01_blockIn_v0001_imh29.ma
+                        > Two tag system, one denotes the stage (integer value, pulled from defintions file), other identifies contents (ex. ABC_010_anim_blockIn_v0001_imh29.ma
         > SOURCE
             > PLATES
             > ELEMENTS
@@ -116,31 +108,35 @@ class Environment(object):
             raise ValueError, "[%s] Server Directory does not exist." % serverdir
         return serverdir
 
-    def directory(self, path=1, show=None, seq=None, shot=None):
-        basepath = [self.rootlocal(), self.rootserver()]
+    def shotdirectory(self, toserver=1, toshots=1, show=None, seq=None, shot=None):
+        basepaths = [self.rootlocal(), self.rootserver()]
+        subpaths = ['publish', 'shots']
+
+        root_path = os.path.join(basepaths[toserver], show)
+        sub_path = os.path.join(root_path, "_production", subpaths[toshots])
 
         if show is not None:
             if seq is not None:
                 if shot is not None:
-                    path = os.path.join(basepath[path], show, "_production\\shots", seq, shot)
+                    path = os.path.join(sub_path, seq, shot)
                     if not os.path.isdir(path):
                         print 'Path [%s] does not exist' % path
                         return 1
                     return path
 
-                path = os.path.join(basepath[path], show, "_production\\shots", seq)
+                path = os.path.join(sub_path, seq)
                 if not os.path.isdir(path):
                     print 'Path [%s] does not exist' % path
                     return 1
                 return path
 
-            path = os.path.join(basepath[path], show)
+            path = root_path
             if not os.path.isdir(path):
                 print 'Path [%s] does not exist' % path
                 return 1
             return path
 
-        path = os.path.join(basepath[path])
+        path = basepaths[toserver]
 
         if not os.path.isdir(path):
             print "Path [%s] does not exist" % path
@@ -172,14 +168,6 @@ class Environment(object):
     def supportedapps(self):
         apps = config.get_sections()
         return apps
-
-
-class FileFinder(object):
-
-    def __init__(self):
-        pass
-
-
 
 
 class Application(object):
@@ -217,22 +205,32 @@ class Application(object):
         else:
             print('NO FILE SIR')
 
-    def getFile(self):
-        testpath = "W:\\SRPJ_LAW\\working\\scenes\\ast\\010\\02. Layout"
+    def getFile(self, stage='', tag=''):
+        base_directory = environment.shotdirectory(show=environment.SHOW, seq=environment.SEQ, shot=environment.SHOT)
 
         latestFiles = []
 
         for file_type in self.filetypes():
-            searchString = '*_%s_*%s' % ('Asteroids', file_type)
-            searchPath = os.path.join(testpath, searchString)
+            tag_string = tag
+            stage_string = stage
+
+            if tag is not '':
+                tag_string = '_%s' % tag
+            if stage is not '':
+                stage_string = '_%s' % stage
+
+            searchString = '*%s%s_*%s' % (stage_string, tag_string, file_type)
+            searchPath = os.path.join(base_directory, self.app, searchString)
+            print searchPath
 
             files = list(glob.iglob(searchPath))
             if files:
                 latest = max(files, key=os.path.getmtime)
                 latestFiles.append(latest)
 
-        latest = max(latestFiles, key=os.path.getmtime)
-        print latest
+        if latestFiles:
+            latest = max(latestFiles, key=os.path.getmtime)
+            print latest
 
     def setversion(self, version=None):
         if version is not None:

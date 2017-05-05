@@ -12,7 +12,8 @@
                     "exe": "C:\\Programs Files\\Autodesk\\Maya2016.5\\bin\\maya.exe",
                     "app": "No/Path/Found",
                     "version": "2016.5",
-                    "filetypes": [".ma", ".mb"]
+                    "filetypes": [".ma", ".mb"],
+                    "rel_scenepath": "scenes"
                 },
                 "nuke":
                 {
@@ -20,14 +21,16 @@
                     "app": "No/Path/Found",
                     "version": "10.5",
                     "subversion": "2",
-                    "filetypes": [".nk"]
+                    "filetypes": [".nk"],
+                    "rel_scenepath": ""
                 },
                 "houdini":
                 {
                     "exe": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe",
                     "app": "No/Path/Found",
                     "version": "15.5.673",
-                    "filetypes": [".hip", ".hipnc"]
+                    "filetypes": [".hip", ".hipnc"],
+                    "rel_scenepath": ""
                 }
             }
         }
