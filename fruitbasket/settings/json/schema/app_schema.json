@@ -1,0 +1,14 @@
+{
+    "definitions": {
+        "application": {
+            "type": "object",
+            "properties": {
+                "win": {"type": "string"},
+                "osx": {"type": "string"},
+                "linux": {"type": "string"},
+                "version": {"type": "string"}
+            },
+            "required": ["win", "osx", "linux", "version"]
+        }
+    }
+}
