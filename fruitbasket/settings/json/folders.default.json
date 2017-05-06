@@ -1,0 +1,52 @@
+{
+    "_production":{
+        "deliverables": {
+            "_final": "",
+            "dailies": ""
+        },
+        "houdini": "",
+        "nuke": "",
+        "edit": "",
+        "shots": {
+            "$ref": "#/definitions/shots"
+        },
+        "source": {
+            "plates": "",
+            "elements": ""
+        },
+        "library": {
+            "categories": ""
+        },
+        "published":{
+            "$ref": "#/definitions/shots"
+        }
+    },
+    "definitions": {
+        "shots": {
+            "abc": {
+                "010": {
+                    "$ref": "#/definitions/shotfolders"
+                },
+                "020": {
+                    "$ref": "#/definitions/shotfolders"
+                }
+            },
+            "def": {
+                "010": {
+                    "$ref": "#/definitions/shotfolders"
+                },
+                "020": {
+                    "$ref": "#/definitions/shotfolders"
+                },
+                "030": {
+                    "$ref": "#/definitions/shotfolders"
+                }
+            }
+        },
+        "shotfolders": {
+            "houdini": "",
+            "maya": "",
+            "nuke": ""
+        }
+    }
+}

@@ -3,12 +3,29 @@
         "application": {
             "type": "object",
             "properties": {
-                "win": {"type": "string"},
-                "osx": {"type": "string"},
-                "linux": {"type": "string"},
-                "version": {"type": "string"}
+                "win": {
+                    "description": "Windows executable path",
+                    "type": "string"
+                },
+                "osx": {
+                    "description": "OSX executable path",
+                    "type": "string"
+                },
+                "linux": {
+                    "description": "Linux executable path",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "version of the software",
+                    "type": "string"
+                }
             },
-            "required": ["win", "osx", "linux", "version"]
+            "required": [
+                "win",
+                "osx",
+                "linux",
+                "version"
+            ]
         }
     }
 }

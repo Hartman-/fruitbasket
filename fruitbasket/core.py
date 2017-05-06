@@ -6,7 +6,6 @@ import sys
 import subprocess
 
 import configparser as config
-import folderbuild
 
 '''
 - Simply pass the env variables in a list with the Popen
@@ -51,7 +50,12 @@ class Setup(object):
         if server is not True:
             root = environment.rootlocal()
 
-        folderbuild.createBaseStructure(self.env.SHOW, root)
+        show_path = os.path.join(root, self.env.SHOW)
+        data = config.readJson('folders.default.json')
+        rel_paths = config.folderPaths(data)
+        for rel_path in rel_paths:
+            full_path = os.path.join(show_path, rel_path)
+            config.createDir(full_path)
 
 
 class Environment(object):
@@ -343,8 +347,6 @@ class Maya(Application):
 
         self.id = 1111
 
-        self.instances()
-
 
 class Nuke(Application):
 
@@ -355,8 +357,6 @@ class Nuke(Application):
         self.path = config.value(self.app, 'win')
 
         self.id = 2222
-
-        self.instances()
 
 
 class Houdini(Application):
@@ -369,20 +369,19 @@ class Houdini(Application):
 
         self.id = 3333
 
-        self.instances()
-
 
 if __name__ == "__main__":
     environment = Environment()
 
     setup = Setup(environment)
+    setup.createBaseStructure(server=False)
 
     app_maya = Maya(environment)
-    app_maya.getFile()
+    # app_maya.getFile()
     # app_maya.run()
     # app_maya.run()
-    app_hou = Houdini(environment)
-    app_nuke = Nuke(environment)
+    # app_hou = Houdini(environment)
+    # app_nuke = Nuke(environment)
     # app_nuke.run()
 
     # app_hou.run()

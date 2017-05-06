@@ -1,8 +1,9 @@
 import ConfigParser
+import collections
 import json
 import jsonschema
+import jsonref
 import os
-import pprint
 
 # Configuration files will always be relative to the parser file
 # Instead of attemping to find the path settings/application.conf relative to the file that made the call
@@ -24,6 +25,7 @@ def fullJsonPath(filename):
 # ----------------------------------------------------------------------------------------------------
 
 
+# need to figure out how to use the jsonschema reference resolver
 def readJson(filename='configuration.json'):
     if os.path.splitext(filename)[1] != '.json':
         filename = filename + '.json'
@@ -37,7 +39,7 @@ def readJson(filename='configuration.json'):
         return 1
 
     with open(file_path) as data_file:
-        data = json.load(data_file)
+        data = jsonref.load(data_file)
         return data
 
 # ----------------------------------------------------------------------------------------------------
@@ -96,6 +98,38 @@ def get_sections(name='configuration'):
     readfile(name)
     return config.sections()
 
+
+def keypaths(nested):
+    for key, value in nested.iteritems():
+        if isinstance(value, collections.Mapping):
+            for subkey, subvalue in keypaths(value):
+                yield [key] + subkey, subvalue
+        else:
+            yield [key], value
+
+
+def createDir(path):
+    if not os.path.isdir(path):
+        newpath = os.makedirs(path)
+        return newpath
+    return 1
+
+
+def folderPaths(json_data):
+    all_paths = []
+    for key_path in list(keypaths(json_data)):
+        if key_path[0][0] == "definitions":
+            continue
+
+        rel_path = ''
+        for folder in key_path[0]:
+            rel_path = os.path.join(rel_path, folder)
+
+        all_paths.append(rel_path)
+
+    return all_paths
+
 if __name__ == "__main__":
-    config_data = readJson()
-    pprint.pprint(config_data)
+    # config_data = readJson('folders.default.json')
+    # pprint.pprint(config_data)
+    print 'yeah'
