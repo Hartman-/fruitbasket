@@ -4,6 +4,7 @@ import json
 import jsonschema
 import jsonref
 import os
+import pprint
 
 # Configuration files will always be relative to the parser file
 # Instead of attemping to find the path settings/application.conf relative to the file that made the call
@@ -41,6 +42,26 @@ def readJson(filename='configuration.json'):
     with open(file_path) as data_file:
         data = jsonref.load(data_file)
         return data
+
+
+def applicationSettings(app, show="default"):
+    json_data = readJson()
+
+    data = json_data[show]['apps'][app]
+    return data
+
+
+def supportedApplications(show="default"):
+    json_data = readJson()
+    data = json_data[show]['apps'].keys()
+
+    return data
+
+
+def rootSettings():
+    json_data = readJson()
+    data = json_data['default']['root']
+    return data
 
 # ----------------------------------------------------------------------------------------------------
 # CONF FILE PARSER
@@ -110,8 +131,8 @@ def keypaths(nested):
 
 def createDir(path):
     if not os.path.isdir(path):
-        newpath = os.makedirs(path)
-        return newpath
+        os.makedirs(path)
+        return path
     return 1
 
 
@@ -130,6 +151,4 @@ def folderPaths(json_data):
     return all_paths
 
 if __name__ == "__main__":
-    # config_data = readJson('folders.default.json')
-    # pprint.pprint(config_data)
-    print 'yeah'
+    supportedApplications('HONU')

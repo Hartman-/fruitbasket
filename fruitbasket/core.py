@@ -85,8 +85,7 @@ class Environment(object):
 
     def os(self):
         curos = platform.system()
-        print curos
-        return curos
+        return curos.lower()
 
     def rootlocal(self, path=None):
         if path is not None:
@@ -95,7 +94,7 @@ class Environment(object):
                 return 0
             return 1
 
-        localdir = config.value('root', 'localdir')
+        localdir = config.rootSettings()['localdirectory']
         if not os.path.isdir(localdir):
             raise ValueError, "[%s] Local Directory does not exist." % localdir
         return localdir
@@ -107,7 +106,7 @@ class Environment(object):
                 return 0
             return 1
 
-        serverdir = config.value('root', 'serverdir')
+        serverdir = config.rootSettings()['serverdirectory']
         if not  os.path.isdir(serverdir):
             raise ValueError, "[%s] Server Directory does not exist." % serverdir
         return serverdir
@@ -160,7 +159,7 @@ class Environment(object):
 
     def runningprocess(self):
         for a in self.supportedapps():
-            value = config.value(str(a), 'win')
+            value = config.applicationSettings(str(a), self.SHOW)[self.os()]
             for p in psutil.process_iter():
                 try:
                     if p.exe() == value:
@@ -170,14 +169,15 @@ class Environment(object):
                     pass
 
     def supportedapps(self):
-        apps = config.get_sections()
+        apps = config.supportedApplications(self.SHOW)
         return apps
 
 
 class Application(object):
 
-    def __init__(self, env):
-        self.app = None
+    def __init__(self, env, app, uid):
+        self.environment = env
+        self.app = app
 
         self.file = None
         self.fileExists = False
@@ -188,13 +188,13 @@ class Application(object):
 
         self.arguments = {}
 
-        self.path = None
+        self.path = config.applicationSettings(self.app, self.environment.SHOW)[self.environment.os()]
         self.pathExists = False
+        if os.path.isfile(self.path):
+            self.pathExists = True
 
-        self.id = 0000
+        self.id = uid
         self.rids = []
-
-        self.environment = env
 
     def setpath(self, path=None):
         if path is not None and os.path.isfile(path):
@@ -214,7 +214,7 @@ class Application(object):
 
         latestFiles = []
 
-        for file_type in self.filetypes():
+        for file_type in self.fileTypes():
             tag_string = tag
             stage_string = stage
 
@@ -242,10 +242,9 @@ class Application(object):
             config.setvalue(self.app.lower(), 'version', self.version)
 
     def instances(self):
-        value = config.value(str(self.app), 'win')
         for p in psutil.process_iter():
             try:
-                if p.exe() == value:
+                if p.exe() == self.path:
                     env = p.environ()
                     if env.has_key('HASH'):
                         cid = env['HASH']
@@ -289,7 +288,7 @@ class Application(object):
 
     def version(self):
         if self.version is None:
-            ver = config.value(self.app, 'version')
+            ver = config.applicationSettings(self.app, self.environment.SHOW)['version']
             if ver:
                 self.version = ver
                 return ver
@@ -324,63 +323,26 @@ class Application(object):
 
         return [self.path] + args
 
-    def filetypes(self):
+    def fileTypes(self):
         if self.app:
-            files = config.value(self.app, 'types')
-            if files:
-                filearray = files.split(';')
-                return filearray
+            file_types = config.applicationSettings(self.app, self.environment.SHOW)['filetypes']
+            if file_types:
+                return file_types
             return 1
         return 1
-
-    def test(self):
-        print self.environment.SHOW
-
-
-class Maya(Application):
-
-    def __init__(self, env):
-        super(Maya, self).__init__(env)
-
-        self.app = 'maya'
-        self.path = config.value(self.app, 'win')
-
-        self.id = 1111
-
-
-class Nuke(Application):
-
-    def __init__(self, env):
-        super(Nuke, self).__init__(env)
-
-        self.app = 'nuke'
-        self.path = config.value(self.app, 'win')
-
-        self.id = 2222
-
-
-class Houdini(Application):
-
-    def __init__(self, env):
-        super(Houdini, self).__init__(env)
-
-        self.app = 'houdini'
-        self.path = config.value(self.app, 'win')
-
-        self.id = 3333
 
 
 if __name__ == "__main__":
     environment = Environment()
-
-    setup = Setup(environment)
-    setup.createBaseStructure(server=False)
-
-    app_maya = Maya(environment)
+    # setup = Setup(environment)
+    # setup.createBaseStructure(server=False)
+    #
+    # app_maya = Maya(environment)
     # app_maya.getFile()
     # app_maya.run()
     # app_maya.run()
-    # app_hou = Houdini(environment)
+    app_hou = Application(environment, 'houdini', 1111)
+    app_hou.instances()
     # app_nuke = Nuke(environment)
     # app_nuke.run()
 
