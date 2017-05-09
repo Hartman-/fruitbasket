@@ -62,7 +62,7 @@ class Setup(object):
                 tst_path = os.path.join(tst_path, key)
 
                 key_path.append(key)
-                config.updateJson(key_path, tst_path)
+                config.updateJson(key_path, tst_path, resolveRef=False)
 
     def createBaseStructure(self, server=True):
         root = environment.rootserver()
@@ -76,7 +76,7 @@ class Setup(object):
             full_path = os.path.join(show_path, rel_path)
             config.createDir(full_path)
 
-    def setShowApps(self, show, showdata=None):
+    def setShowApps(self, show, show_data=None):
         # base string, need to add application name to complete the reference
         ref_string = "#/default/apps/"
 
@@ -84,51 +84,19 @@ class Setup(object):
         json_file = config.supportedApplications(keys=False, resolveRef=False)
         json_data = json_file[0]
 
-        showdata = 1
-        test_data = {
-            "maya":
-            {
-                "windows": "C:\\Programs Files\\Autodesk\\Maya2016.5\\bin\\maya.exe",
-                "osx": "No/Path/Found",
-                "linux": "No/Path",
-                "version": "2016.5",
-                "filetypes": [".ma", ".mb"],
-                "rel_scenepath": "scenes"
-            },
-            "nuke":
-            {
-                "windows": "C:\\Program Files\\Nuke10.5v2\\Nuke10.5.exe",
-                "osx": "No/Path/Found",
-                "linux": "No/Path",
-                "version": "10.5",
-                "subversion": "2",
-                "filetypes": [".nk"],
-                "rel_scenepath": ""
-            }
-        }
-        # ,
-        # "houdini":
-        # {
-        #     "windows": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe",
-        #     "osx": "No/Path/Found",
-        #     "linux": "No/Path",
-        #     "version": "15.5.673",
-        #     "filetypes": [".hip", ".hipnc"],
-        #     "rel_scenepath": ""
-        # }
-        if showdata is not None:
+        if show_data is not None and type(show_data) is dict:
             data_keys = json_data.keys()
             for data_key in data_keys:
-                if data_key in test_data:
+                if data_key in show_data:
                     key_path = list(json_file[1])
                     key_path[0] = show
 
                     key_path.append(str(data_key))
-                    for app_key in test_data[data_key]:
+                    for app_key in show_data[data_key]:
                         full_path = list(key_path)
                         full_path.append(app_key)
 
-                        config.updateJson(full_path, test_data[data_key][app_key], resolveRef=False)
+                        config.updateJson(full_path, show_data[data_key][app_key], resolveRef=False)
 
                 else:
                     key_path = list(json_file[1])
@@ -153,9 +121,6 @@ class Setup(object):
 
                 full_ref = ref_string + data_key
                 config.updateJson(key_path, full_ref, resolveRef=False)
-
-    def updateShowApps(self):
-        print self.env.SHOW
 
 
 class Environment(object):
