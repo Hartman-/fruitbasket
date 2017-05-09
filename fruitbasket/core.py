@@ -81,7 +81,7 @@ class Setup(object):
         ref_string = "#/default/apps/"
 
         # return the default application json data
-        json_file = config.supportedApplications(keys=False, resolveRef=False)
+        json_file = config.supportedApplications(keys=False, includePath=True, resolveRef=False)
         json_data = json_file[0]
 
         if show_data is not None and type(show_data) is dict:
@@ -223,8 +223,8 @@ class Environment(object):
         return envvar
 
     def runningprocess(self):
-        for a in self.supportedapps()[0]:
-            value = config.applicationSettings(str(a), self.SHOW)[0][self.os()]
+        for a in self.supportedapps():
+            value = config.applicationSettings(str(a), self.SHOW)[self.os()]
             for p in psutil.process_iter():
                 try:
                     if p.exe() == value:
@@ -234,7 +234,7 @@ class Environment(object):
                     pass
 
     def supportedapps(self):
-        apps = config.supportedApplications(self.SHOW)[0]
+        apps = config.supportedApplications(self.SHOW)
         return apps
 
 
@@ -253,7 +253,7 @@ class Application(object):
 
         self.arguments = {}
 
-        self.path = config.applicationSettings(self.app, self.environment.SHOW)[0][self.environment.os()]
+        self.path = config.applicationSettings(self.app, self.environment.SHOW)[self.environment.os()]
         self.pathExists = False
         if os.path.isfile(self.path):
             self.pathExists = True
@@ -353,7 +353,7 @@ class Application(object):
 
     def version(self):
         if self.version is None:
-            ver = config.applicationSettings(self.app, self.environment.SHOW)[0]['version']
+            ver = config.applicationSettings(self.app, self.environment.SHOW)['version']
             if ver:
                 self.version = ver
                 return ver
@@ -390,7 +390,7 @@ class Application(object):
 
     def fileTypes(self):
         if self.app:
-            file_types = config.applicationSettings(self.app, self.environment.SHOW)[0]['filetypes']
+            file_types = config.applicationSettings(self.app, self.environment.SHOW)['filetypes']
             if file_types:
                 return file_types
             return 1
@@ -399,6 +399,7 @@ class Application(object):
 
 if __name__ == "__main__":
     environment = Environment()
+
     setup = Setup(environment)
     setup.setShowApps('TESTSHOW')
     # setup.createBaseStructure(server=False)

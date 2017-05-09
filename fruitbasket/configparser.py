@@ -72,15 +72,17 @@ def updateJson(key_path, input_data, filename='configuration.json', resolveRef=T
         json.dump(tmp_json, json_file, indent=4)
 
 
-def applicationSettings(app, show="default", resolveRef=True):
+def applicationSettings(app, show="default", includePath=False, resolveRef=True):
     json_data = readJson(resolveReferences=resolveRef)
     data = json_data[show]['apps'][app]
     key_path = [show, 'apps', app]
 
-    return [data, key_path]
+    if includePath:
+        return [data, key_path]
+    return data
 
 
-def supportedApplications(show="default", keys=True, resolveRef=True):
+def supportedApplications(show="default", keys=True, includePath=False, resolveRef=True):
     json_data = readJson(resolveReferences=resolveRef)
     if keys is True:
         data = json_data[show]['apps'].keys()
@@ -89,15 +91,19 @@ def supportedApplications(show="default", keys=True, resolveRef=True):
 
     key_path = [show, 'apps']
 
-    return [data, key_path]
+    if includePath:
+        return [data, key_path]
+    return data
 
 
-def rootSettings(resolveRef=True):
+def rootSettings(includePath=False, resolveRef=True):
     json_data = readJson(resolveReferences=resolveRef)
     data = json_data['default']['root']
     key_path = ['default', 'root']
 
-    return [data, key_path]
+    if includePath:
+        return [data, key_path]
+    return data
 
 # ----------------------------------------------------------------------------------------------------
 # CONF FILE PARSER
@@ -187,4 +193,4 @@ def folderPaths(json_data):
     return all_paths
 
 if __name__ == "__main__":
-    supportedApplications('HONU')
+    print supportedApplications('HONU')
