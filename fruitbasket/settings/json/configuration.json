@@ -1,8 +1,10 @@
 {
     "default": {
         "root": {
-            "localdirectory": "C:\\Users\\imh29\\Desktop\\thurster",
-            "serverdirectory": "C:\\Users\\imh29\\Desktop"
+            "paths": {
+                "local": "C:\\Users\\imh29\\Desktop\\thurster",
+                "server": "C:\\Users\\imh29\\Desktop"
+            }
         },
         "apps": {
             "maya":

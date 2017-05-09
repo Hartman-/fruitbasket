@@ -9,4 +9,4 @@ Sphinx==1.4.8
 PySide==1.2.4
 psutil==5.2.2
 jsonschema==2.6.0
-jsonref==0.2-dev
+jsonref

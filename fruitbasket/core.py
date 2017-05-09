@@ -45,6 +45,25 @@ class Setup(object):
     def __init__(self, environment):
         self.env = environment
 
+        # self.checkRootPaths()
+
+    def checkRootPaths(self):
+        root_data = config.rootSettings()
+        root_paths = root_data[0]['paths']
+
+        for key in root_paths:
+
+            tst_path = 'C:\\Users\\IanHartman\\Desktop\\Pipeline'
+
+            if not os.path.isdir(root_paths[key]):
+                key_path = list(root_data[1])
+                key_path.append('paths')
+
+                tst_path = os.path.join(tst_path, key)
+
+                key_path.append(key)
+                config.updateJson(key_path, tst_path)
+
     def createBaseStructure(self, server=True):
         root = environment.rootserver()
         if server is not True:
@@ -56,6 +75,35 @@ class Setup(object):
         for rel_path in rel_paths:
             full_path = os.path.join(show_path, rel_path)
             config.createDir(full_path)
+
+    def setShowApps(self, show, showdata=None):
+        # base string, need to add application name to complete the reference
+        ref_string = "#/default/apps/"
+
+        # return the default application json data
+        json_file = config.supportedApplications(keys=False, resolveRef=False)
+        json_data = json_file[0]
+
+        if showdata is not None:
+            print 'not none yall'
+
+        # If no unique data is passed as an argument, set app settings to reference the defaults
+        else:
+            data_keys = json_data.keys()
+            for data_key in data_keys:
+                key_path = list(json_file[1])
+                key_path[0] = show
+
+                key_path.append(data_key)
+                key_path.append('$ref')
+
+                full_ref = ref_string + data_key
+                config.updateJson(key_path, full_ref, resolveRef=False)
+
+        print json_data
+
+    def updateShowApps(self):
+        print self.env.SHOW
 
 
 class Environment(object):
@@ -94,7 +142,7 @@ class Environment(object):
                 return 0
             return 1
 
-        localdir = config.rootSettings()['localdirectory']
+        localdir = config.rootSettings()['paths']['local']
         if not os.path.isdir(localdir):
             raise ValueError, "[%s] Local Directory does not exist." % localdir
         return localdir
@@ -106,7 +154,7 @@ class Environment(object):
                 return 0
             return 1
 
-        serverdir = config.rootSettings()['serverdirectory']
+        serverdir = config.rootSettings()['paths']['server']
         if not  os.path.isdir(serverdir):
             raise ValueError, "[%s] Server Directory does not exist." % serverdir
         return serverdir
@@ -158,8 +206,8 @@ class Environment(object):
         return envvar
 
     def runningprocess(self):
-        for a in self.supportedapps():
-            value = config.applicationSettings(str(a), self.SHOW)[self.os()]
+        for a in self.supportedapps()[0]:
+            value = config.applicationSettings(str(a), self.SHOW)[0][self.os()]
             for p in psutil.process_iter():
                 try:
                     if p.exe() == value:
@@ -169,7 +217,7 @@ class Environment(object):
                     pass
 
     def supportedapps(self):
-        apps = config.supportedApplications(self.SHOW)
+        apps = config.supportedApplications(self.SHOW)[0]
         return apps
 
 
@@ -188,7 +236,7 @@ class Application(object):
 
         self.arguments = {}
 
-        self.path = config.applicationSettings(self.app, self.environment.SHOW)[self.environment.os()]
+        self.path = config.applicationSettings(self.app, self.environment.SHOW)[0][self.environment.os()]
         self.pathExists = False
         if os.path.isfile(self.path):
             self.pathExists = True
@@ -288,7 +336,7 @@ class Application(object):
 
     def version(self):
         if self.version is None:
-            ver = config.applicationSettings(self.app, self.environment.SHOW)['version']
+            ver = config.applicationSettings(self.app, self.environment.SHOW)[0]['version']
             if ver:
                 self.version = ver
                 return ver
@@ -325,7 +373,7 @@ class Application(object):
 
     def fileTypes(self):
         if self.app:
-            file_types = config.applicationSettings(self.app, self.environment.SHOW)['filetypes']
+            file_types = config.applicationSettings(self.app, self.environment.SHOW)[0]['filetypes']
             if file_types:
                 return file_types
             return 1
@@ -334,15 +382,16 @@ class Application(object):
 
 if __name__ == "__main__":
     environment = Environment()
-    # setup = Setup(environment)
+    setup = Setup(environment)
+    setup.setShowApps('TESTSHOW')
     # setup.createBaseStructure(server=False)
     #
     # app_maya = Maya(environment)
     # app_maya.getFile()
     # app_maya.run()
     # app_maya.run()
-    app_hou = Application(environment, 'houdini', 1111)
-    app_hou.instances()
+    # app_hou = Application(environment, 'houdini', 1111)
+    # app_hou.instances()
     # app_nuke = Nuke(environment)
     # app_nuke.run()
 

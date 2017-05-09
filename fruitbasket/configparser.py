@@ -27,7 +27,7 @@ def fullJsonPath(filename):
 
 
 # need to figure out how to use the jsonschema reference resolver
-def readJson(filename='configuration.json'):
+def readJson(filename='configuration.json', resolveReferences=True):
     if os.path.splitext(filename)[1] != '.json':
         filename = filename + '.json'
 
@@ -40,28 +40,64 @@ def readJson(filename='configuration.json'):
         return 1
 
     with open(file_path) as data_file:
-        data = jsonref.load(data_file)
+        if resolveReferences:
+            data = jsonref.load(data_file)
+            return data
+        data = json.load(data_file)
         return data
 
 
-def applicationSettings(app, show="default"):
-    json_data = readJson()
+# THANKS STACK OVERFLOW
+# http://stackoverflow.com/questions/13687924/setting-a-value-in-a-nested-python-dictionary-given-a-list-of-indices-and-value
+def nested_set(dic, keys, value):
+    for key in keys[:-1]:
+        dic = dic.setdefault(key, {})
+    dic[keys[-1]] = value
 
+
+# Parameters:
+#   - key_path: input list of keys that end with the key for the data you wish to update
+#   - input_data: new value to update the key with
+#   - filename: json file to write to
+def updateJson(key_path, input_data, filename='configuration.json', resolveRef=True):
+    if os.path.splitext(filename)[1] != '.json':
+        filename = filename + '.json'
+
+    file_path = fullJsonPath(filename)
+
+    tmp_json = readJson(resolveReferences=resolveRef)
+    nested_set(tmp_json, key_path, input_data)
+
+    with open(file_path, "w") as json_file:
+        json.dump(tmp_json, json_file, indent=4)
+
+
+def applicationSettings(app, show="default", resolveRef=True):
+    json_data = readJson(resolveReferences=resolveRef)
     data = json_data[show]['apps'][app]
-    return data
+    key_path = [show, 'apps', app]
+
+    return [data, key_path]
 
 
-def supportedApplications(show="default"):
-    json_data = readJson()
-    data = json_data[show]['apps'].keys()
+def supportedApplications(show="default", keys=True, resolveRef=True):
+    json_data = readJson(resolveReferences=resolveRef)
+    if keys is True:
+        data = json_data[show]['apps'].keys()
+    else:
+        data = json_data[show]['apps']
 
-    return data
+    key_path = [show, 'apps']
+
+    return [data, key_path]
 
 
-def rootSettings():
-    json_data = readJson()
+def rootSettings(resolveRef=True):
+    json_data = readJson(resolveReferences=resolveRef)
     data = json_data['default']['root']
-    return data
+    key_path = ['default', 'root']
+
+    return [data, key_path]
 
 # ----------------------------------------------------------------------------------------------------
 # CONF FILE PARSER
