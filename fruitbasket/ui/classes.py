@@ -11,6 +11,8 @@ class modal_ApplicationInfo(QtGui.QDialog):
         self.show = show
         self.app_data = app_data
 
+        self.setModal(True)
+
         layout = QtGui.QVBoxLayout(self)
 
         app_string = '[APP] %s' % self.appName
@@ -18,15 +20,15 @@ class modal_ApplicationInfo(QtGui.QDialog):
         show_string = '[SHOW] %s' % self.show
         show_name = QtGui.QLabel(show_string)
 
-        self.info_windowsPath = HLineItem('Windows', self.app_data['windows'], inputtype='dir')
+        self.info_windowsPath = HLineItem('Windows', str(self.app_data['windows']), inputtype='dir')
         self.info_windowsPath.searchClicked.connect(
             lambda: self.openFileBrowser(self.info_windowsPath))
 
-        self.info_osxPath = HLineItem('OSX', self.app_data['osx'], inputtype='dir')
+        self.info_osxPath = HLineItem('OSX', str(self.app_data['osx']), inputtype='dir')
         self.info_osxPath.searchClicked.connect(
             lambda: self.openFileBrowser(self.info_osxPath))
 
-        self.info_linuxPath = HLineItem('Linux', self.app_data['linux'], inputtype='dir')
+        self.info_linuxPath = HLineItem('Linux', str(self.app_data['linux']), inputtype='dir')
         self.info_linuxPath.searchClicked.connect(
             lambda: self.openFileBrowser(self.info_linuxPath))
 
@@ -73,7 +75,7 @@ class modal_ApplicationInfo(QtGui.QDialog):
         startDir = line_item.input.text()
 
         fDialog = QtGui.QFileDialog(self)
-        fpath = fDialog.getOpenFileName(self, str(dialogTitle), startDir)
+        fpath = fDialog.getOpenFileName(self, str(dialogTitle), str(startDir))
         if fpath[0]:
             if fpath[0] != startDir:
                 line_item.input.setText(fpath[0])
@@ -157,6 +159,53 @@ class HorizLine(QtGui.QHBoxLayout):
 
         self.addWidget(line)
         self.setContentsMargins(10, 5, 10, 5)
+
+
+class ShowListWidget(QtGui.QListWidget):
+
+    selectCurrent = QtCore.Signal()
+
+    def __init__(self, parent=None):
+        super(ShowListWidget, self).__init__(parent)
+        self.setDragEnabled(False)
+
+    def addNewItems(self, showlist):
+        for index, value in enumerate(showlist):
+            itemN = QtGui.QListWidgetItem()
+            widg = ListItem(value)
+            itemN.setSizeHint(widg.sizeHint())
+            self.addItem(itemN)
+            self.setItemWidget(itemN, widg)
+
+    def purgeList(self):
+        self.clear()
+
+    def refreshList(self, showlist):
+        self.purgeList()
+        self.addNewItems(showlist)
+
+    def currentSelection(self):
+        curRow = self.currentRow()
+        return curRow
+        # self.selectCurrent.emit(curRow)
+
+class ListItem(QtGui.QWidget):
+    def __init__(self, name, parent=None):
+        super(ListItem, self).__init__(parent)
+
+        isLoaded = False
+
+        self.showName = QtGui.QLabel(name)
+
+        wrapper = QtGui.QHBoxLayout()
+        wrapper.setAlignment(QtCore.Qt.AlignLeft)
+
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.showName)
+        wrapper.addLayout(layout)
+
+        layout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        self.setLayout(wrapper)
 
 
 if __name__ == "__main__":

@@ -237,6 +237,14 @@ class Environment(object):
         apps = config.supportedApplications(self.SHOW)
         return apps
 
+    def allShows(self):
+        shows = config.readJson().keys()
+        return shows
+
+    def applicationSettings(self, app):
+        settings = config.applicationSettings(app, show=self.SHOW)
+        return settings
+
 
 class Application(object):
 
