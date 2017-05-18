@@ -137,7 +137,7 @@ class SettingsWindow(QtGui.QDialog):
 
         layout_Cmd = QtGui.QHBoxLayout()
         layout_Cmd.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
-        self.btn_Accept = QtGui.QPushButton('Accept')
+        self.btn_Accept = QtGui.QPushButton('Ok')
         self.btn_Cancel = QtGui.QPushButton('Cancel')
 
         self.btn_Accept.pressed.connect(self.submitClose)
@@ -200,11 +200,11 @@ class MainWindow(QtGui.QMainWindow):
             self.central_widget.setCurrentWidget(logged_in_widget)
 
     def openConfig(self):
-        print 'fuck ye'
-        modal = SettingsWindow(self.central_widget.currentWidget().env)
-        returncode = modal.exec_()
-        if returncode:
-            print 'good'
+        if hasattr(self.central_widget.currentWidget(), 'env'):
+            modal = SettingsWindow(self.central_widget.currentWidget().env)
+            returncode = modal.exec_()
+            if returncode:
+                print 'good'
 
 if __name__ == "__main__":
 
