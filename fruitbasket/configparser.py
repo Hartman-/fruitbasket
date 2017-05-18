@@ -105,6 +105,16 @@ def rootSettings(includePath=False, resolveRef=True):
         return [data, key_path]
     return data
 
+
+def sequences(resolveRef=False):
+    json_data = readJson(filename="folders.default.json", resolveReferences=resolveRef)
+    return json_data['definitions']['sequences'].keys()
+
+
+def shots(sequence, resolveRef=False):
+    json_data = readJson(filename="folders.default.json", resolveReferences=resolveRef)
+    return json_data['definitions']['sequences'][str(sequence)].keys()
+
 # ----------------------------------------------------------------------------------------------------
 # CONF FILE PARSER
 # ----------------------------------------------------------------------------------------------------

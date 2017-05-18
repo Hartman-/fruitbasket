@@ -8,7 +8,7 @@
         "nuke": "",
         "edit": "",
         "shots": {
-            "$ref": "#/definitions/shots"
+            "$ref": "#/definitions/sequences"
         },
         "source": {
             "plates": "",
@@ -18,11 +18,11 @@
             "categories": ""
         },
         "published":{
-            "$ref": "#/definitions/shots"
+            "$ref": "#/definitions/sequences"
         }
     },
     "definitions": {
-        "shots": {
+        "sequences": {
             "abc": {
                 "010": {
                     "$ref": "#/definitions/shotfolders"

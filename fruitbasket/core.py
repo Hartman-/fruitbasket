@@ -1,3 +1,4 @@
+import getpass
 import glob
 import os
 import platform
@@ -222,6 +223,9 @@ class Environment(object):
             raise ValueError, "[%s] Environment Variable does not exist" % key
         return envvar
 
+    def currentUser(self):
+        return getpass.getuser()
+
     def runningprocess(self):
         for a in self.supportedapps():
             value = config.applicationSettings(str(a), self.SHOW)[self.os()]
@@ -240,6 +244,14 @@ class Environment(object):
     def allShows(self):
         shows = config.readJson().keys()
         return shows
+
+    def sequences(self):
+        seqs = sorted(config.sequences())
+        return seqs
+
+    def shots(self, seq):
+        shots = sorted(config.shots(seq))
+        return shots
 
     def applicationSettings(self, app):
         settings = config.applicationSettings(app, show=self.SHOW)

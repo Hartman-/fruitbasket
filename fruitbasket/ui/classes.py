@@ -81,17 +81,40 @@ class modal_ApplicationInfo(QtGui.QDialog):
                 line_item.input.setText(fpath[0])
 
 
+class TitleLine(QtGui.QHBoxLayout):
+    def __init__(self, show, user, parent=None):
+        super(TitleLine, self).__init__(parent)
+
+        self.show = show
+        self.user = user
+
+        layout_left = QtGui.QVBoxLayout()
+        layout_left.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+
+        layout_right = QtGui.QVBoxLayout()
+        layout_right.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
+
+        label_show = QtGui.QLabel('[SHOW] %s' % self.show)
+        label_user = QtGui.QLabel('[USER] %s' % self.user)
+
+        layout_left.addWidget(label_show)
+        layout_right.addWidget(label_user)
+
+        self.addLayout(layout_left)
+        self.addLayout(layout_right)
+
+
 class HLineItem(QtGui.QHBoxLayout):
 
     searchClicked = QtCore.Signal(bool)
 
-    def __init__(self, labeltext='PLACEHOLDER', inputtext='PLACEHOLDER', inputtype='string', parent=None):
+    def __init__(self, labeltext='PLACEHOLDER', inputtext='PLACEHOLDER', inputtype='string', width=105, parent=None):
         super(HLineItem, self).__init__(parent)
 
         self.label = QtGui.QLabel()
         self.label.setText(labeltext)
-        self.label.setFixedWidth(105)
-        self.label.setContentsMargins(0, 0, 20, 0)
+        self.label.setFixedWidth(width)
+        self.label.setContentsMargins(0, 0, 10, 0)
         self.label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.addWidget(self.label)
@@ -148,6 +171,30 @@ class HLineList(QtGui.QVBoxLayout):
             self.addLayout(lineitem)
 
 
+class GroupBox(QtGui.QWidget):
+    def __init__(self, title, parent=None):
+        super(GroupBox, self).__init__(parent)
+
+        self.wrapper = QtGui.QVBoxLayout()
+        self.wrapper.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+
+        self.group = QtGui.QGroupBox()
+        self.group.setTitle(str(title))
+
+        self.group_layout = QtGui.QHBoxLayout()
+
+        self.group.setLayout(self.group_layout)
+
+        self.wrapper.addWidget(self.group)
+        self.setLayout(self.wrapper)
+
+    def addWidget(self, widget):
+        self.group_layout.addWidget(widget)
+
+    def addLayout(self, layout):
+        self.group_layout.addLayout(layout)
+
+
 class HorizLine(QtGui.QHBoxLayout):
     def __init__(self, parent=None):
         super(HorizLine, self).__init__(parent)
@@ -161,12 +208,9 @@ class HorizLine(QtGui.QHBoxLayout):
         self.setContentsMargins(10, 5, 10, 5)
 
 
-class ShowListWidget(QtGui.QListWidget):
-
-    selectCurrent = QtCore.Signal()
-
+class HListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
-        super(ShowListWidget, self).__init__(parent)
+        super(HListWidget, self).__init__(parent)
         self.setDragEnabled(False)
 
     def addNewItems(self, showlist):
@@ -187,7 +231,7 @@ class ShowListWidget(QtGui.QListWidget):
     def currentSelection(self):
         curRow = self.currentRow()
         return curRow
-        # self.selectCurrent.emit(curRow)
+
 
 class ListItem(QtGui.QWidget):
     def __init__(self, name, parent=None):
