@@ -53,7 +53,7 @@ class modal_ApplicationInfo(QtGui.QDialog):
         layout.addLayout(HorizLine())
         layout.addLayout(list_info)
         layout.addWidget(btn_submit)
-        self.setWindowTitle('Application Settings')
+        self.setWindowTitle('%s Settings' % self.appName)
 
     def submitClose(self):
         self.accept()
@@ -108,7 +108,7 @@ class HLineItem(QtGui.QHBoxLayout):
 
     searchClicked = QtCore.Signal(bool)
 
-    def __init__(self, labeltext='PLACEHOLDER', inputtext='PLACEHOLDER', inputtype='string', width=105, parent=None):
+    def __init__(self, labeltext='PLACEHOLDER', inputtext='PLACEHOLDER', inputtype='string', frozen=False, width=105, parent=None):
         super(HLineItem, self).__init__(parent)
 
         self.label = QtGui.QLabel()
@@ -129,6 +129,13 @@ class HLineItem(QtGui.QHBoxLayout):
 
         elif inputtype == 'list' and type(inputtext) is list:
             self.list = QtGui.QComboBox()
+            self.list.setMaximumWidth(75)
+            self.list.setStyleSheet('''*
+                QComboBox QAbstractItemView 
+                {
+                    min-width: 150px;
+                }
+            ''')
 
             for item in inputtext:
                 self.list.addItem(item)
@@ -153,7 +160,11 @@ class HLineItem(QtGui.QHBoxLayout):
             self.btn.pressed.connect(self.emitClicked)
 
         else:
-            self.input = QtGui.QLineEdit()
+            if frozen is False:
+                self.input = QtGui.QLineEdit()
+            else:
+                self.input = QtGui.QLabel()
+
             self.input.setText(inputtext)
             self.input.setToolTip(inputtext)
             self.addWidget(self.input)

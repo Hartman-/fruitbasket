@@ -40,7 +40,11 @@ class LoggedWidget(QtGui.QWidget):
 
         self.show = show
         self.env = core.Environment()
+        self.setup = core.Setup(self.env)
         self.env.setShow(self.show)
+
+        path_results = self.setup.checkRootPaths()
+        self.checkPaths(path_results)
 
         self.sequences = self.env.sequences()
         self.shots = self.env.shots(self.sequences[0])
@@ -93,6 +97,22 @@ class LoggedWidget(QtGui.QWidget):
         wrapper.addLayout(layout)
         self.setLayout(wrapper)
 
+    def checkPaths(self, paths_dict):
+        for key, value in paths_dict.iteritems():
+            print key, value
+            if value is False:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText('The %s path does not exist. Please select a valid path.' % key.upper())
+                msgBox.exec_()
+
+                title = 'Set %s Path' % key.upper()
+                path = QtGui.QFileDialog.getExistingDirectory(self, str(title))
+                if path:
+                    self.setup.setRootSetting(['paths', key], path)
+                    print path
+                    return path
+                return None
+
     def currentShot(self):
         curSeq = self.list_seq.currentSelection()
         curShot = self.list_shot.currentSelection()
@@ -121,11 +141,16 @@ class SettingsWindow(QtGui.QDialog):
 
         wrapper = QtGui.QVBoxLayout()
 
+        grp_Root = gui.GroupBox('Root Paths')
+        self.item_serverPath = gui.HLineItem('Server', self.env.rootserver(), width=60, frozen=True)
+        self.item_localPath = gui.HLineItem('Local', self.env.rootlocal(), width=60, frozen=True)
+        self.list_Paths = gui.HLineList([self.item_serverPath, self.item_localPath])
+        grp_Root.addLayout(self.list_Paths)
+        wrapper.addWidget(grp_Root)
+
+        grp_Apps = gui.GroupBox('Application Settings')
         app_layout = QtGui.QVBoxLayout()
         app_layout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
-
-        label_Apps = QtGui.QLabel('Application Settings:')
-        app_layout.addWidget(label_Apps)
 
         apps = self.env.supportedapps()
         for index, app in enumerate(apps):
@@ -133,7 +158,8 @@ class SettingsWindow(QtGui.QDialog):
             btn_app.clicked.connect(self.Button)
             app_layout.addWidget(btn_app)
 
-        wrapper.addLayout(app_layout)
+        grp_Apps.addLayout(app_layout)
+        wrapper.addWidget(grp_Apps)
 
         layout_Cmd = QtGui.QHBoxLayout()
         layout_Cmd.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
@@ -149,6 +175,7 @@ class SettingsWindow(QtGui.QDialog):
 
         wrapper.addLayout(layout_Cmd)
         self.setLayout(wrapper)
+        self.setWindowTitle('Settings')
 
     def submitClose(self):
         self.accept()
@@ -186,10 +213,15 @@ class MainWindow(QtGui.QMainWindow):
         action_Config.setStatusTip('Manage Config of Fruitbasket')
         action_Config.triggered.connect(self.openConfig)
 
+        action_SetShow = QtGui.QAction('&Set Show...', self)
+        action_SetShow.setStatusTip('Change the current show')
+        action_SetShow.triggered.connect(self.switchShow)
+
         menubar = self.menuBar()
         menu_File = menubar.addMenu('&File')
 
         menu_File.addAction(action_Config)
+        menu_File.addAction(action_SetShow)
         menu_File.addAction(action_Exit)
 
     def login(self):
@@ -206,12 +238,16 @@ class MainWindow(QtGui.QMainWindow):
             if returncode:
                 print 'good'
 
+    def switchShow(self):
+        if hasattr(self.central_widget.currentWidget(), 'env'):
+            self.central_widget.currentWidget().env.SHOW = 'TESTSHOW'
+
 if __name__ == "__main__":
 
     # Create the Qt Application
     app = QtGui.QApplication(sys.argv)
     mainGui = MainWindow()
-    mainGui.setWindowTitle('Main Window')
+    mainGui.setWindowTitle('FruitBasket LAWncher')
 
     sys.exit(app.exec_())
 

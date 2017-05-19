@@ -50,20 +50,32 @@ class Setup(object):
 
     def checkRootPaths(self):
         root_data = config.rootSettings()
-        root_paths = root_data[0]['paths']
+        root_paths = root_data['paths']
+
+        results = {}
 
         for key in root_paths:
 
-            tst_path = 'C:\\Users\\IanHartman\\Desktop\\Pipeline'
-
+            # tst_path = 'C:\\Users\\IanHartman\\Desktop\\Pipeline'
+            results[key] = True
             if not os.path.isdir(root_paths[key]):
-                key_path = list(root_data[1])
-                key_path.append('paths')
+                # key_path = list(root_data[1])
+                # key_path.append('paths')
+                #
+                # tst_path = os.path.join(tst_path, key)
+                #
+                # key_path.append(key)
+                # config.updateJson(key_path, tst_path, resolveRef=False)
+                results[key] = False
 
-                tst_path = os.path.join(tst_path, key)
+        return results
 
-                key_path.append(key)
-                config.updateJson(key_path, tst_path, resolveRef=False)
+    def setRootSetting(self, set_path, value):
+        key_path = ['default', 'root']
+        for key in set_path:
+            key_path.append(key)
+
+        config.updateJson(key_path, value, resolveRef=False)
 
     def createBaseStructure(self, server=True):
         root = environment.rootserver()
