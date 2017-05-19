@@ -66,6 +66,9 @@ class Setup(object):
 
         shutil.copy(default_path, new_path)
 
+        # Setup the show to use the default application settings
+        self.setShowApps(show)
+
     def setShowApps(self, show, show_data=None):
         # base string, need to add application name to complete the reference
         ref_string = "#/default/apps/"

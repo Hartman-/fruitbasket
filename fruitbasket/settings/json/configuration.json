@@ -2,71 +2,58 @@
     "default": {
         "apps": {
             "nuke": {
-                "osx": "No/Path/Found", 
-                "windows": "C:\\Program Files\\Nuke10.5v2\\Nuke10.5.exe", 
-                "subversion": "2", 
-                "version": "10.5", 
-                "linux": "No/Path", 
-                "rel_scenepath": "", 
+                "osx": "No/Path/Found",
+                "windows": "C:\\Program Files\\Nuke10.5v2\\Nuke10.5.exe",
+                "subversion": "2",
+                "version": "10.5",
+                "linux": "No/Path",
+                "rel_scenepath": "",
                 "filetypes": [
                     ".nk"
                 ]
-            }, 
+            },
             "maya": {
-                "osx": "No/Path/Found", 
-                "windows": "C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\maya.exe", 
-                "version": "2016.5", 
-                "linux": "No/Path", 
-                "rel_scenepath": "scenes", 
+                "osx": "No/Path/Found",
+                "windows": "C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\maya.exe",
+                "version": "2016.5",
+                "linux": "No/Path",
+                "rel_scenepath": "scenes",
                 "filetypes": [
-                    ".ma", 
+                    ".ma",
                     ".mb"
                 ]
-            }, 
+            },
             "houdini": {
-                "osx": "No/Path/Found", 
-                "windows": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe", 
-                "version": "15.5.673", 
-                "linux": "No/Path", 
-                "rel_scenepath": "", 
+                "osx": "No/Path/Found",
+                "windows": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe",
+                "version": "15.5.673",
+                "linux": "No/Path",
+                "rel_scenepath": "",
                 "filetypes": [
-                    ".hip", 
+                    ".hip",
                     ".hipnc"
                 ]
             }
-        }, 
+        },
         "root": {
             "paths": {
-                "local": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\local", 
+                "local": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\local",
                 "server": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\server"
             }
         }
-    }, 
+    },
     "HONU": {
         "apps": {
             "nuke": {
                 "$ref": "#/default/apps/nuke"
-            }, 
+            },
             "maya": {
                 "$ref": "#/default/apps/maya"
-            }, 
+            },
             "houdini": {
                 "$ref": "#/default/apps/houdini"
             }
-        }, 
+        },
         "id": 0
-    }, 
-    "TESTSHOW": {
-        "apps": {
-            "nuke": {
-                "$ref": "#/default/apps/nuke"
-            }, 
-            "maya": {
-                "$ref": "#/default/apps/maya"
-            }, 
-            "houdini": {
-                "$ref": "#/default/apps/houdini"
-            }
-        }
     }
 }

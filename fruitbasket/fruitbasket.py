@@ -147,11 +147,18 @@ class LoggedWidget(QtGui.QWidget):
 
         grp_Filters.addLayout(filter_wrapper)
 
+        layout_Cmd = QtGui.QHBoxLayout()
+        layout_Cmd.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
+        self.btn_Logout = QtGui.QPushButton('Logout')
+        self.btn_Logout.clicked.connect(self.parent().logout)
+        layout_Cmd.addWidget(self.btn_Logout)
+
         layout.addWidget(grp_Selection)
         layout.addWidget(grp_Filters)
 
         wrapper.addLayout(gui.TitleLine(self.env.SHOW, self.env.currentUser()))
         wrapper.addLayout(layout)
+        wrapper.addLayout(layout_Cmd)
         self.setLayout(wrapper)
 
     def currentShot(self):
@@ -268,9 +275,15 @@ class MainWindow(QtGui.QMainWindow):
     def login(self):
         show = self.central_widget.currentWidget().getCurrent()
         if show is not None:
-            logged_in_widget = LoggedWidget(show)
+            logged_in_widget = LoggedWidget(show, parent=self)
             self.central_widget.addWidget(logged_in_widget)
             self.central_widget.setCurrentWidget(logged_in_widget)
+
+    def logout(self):
+        login_widget = self.central_widget.widget(0)
+        cur_widget = self.central_widget.currentWidget()
+        self.central_widget.setCurrentWidget(login_widget)
+        self.central_widget.removeWidget(cur_widget)
 
     def openConfig(self):
         if hasattr(self.central_widget.currentWidget(), 'env'):
