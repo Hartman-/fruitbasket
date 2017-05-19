@@ -13,25 +13,85 @@ from ui import classes as gui
 class LoginShowWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(LoginShowWidget, self).__init__(parent)
-        layout = QtGui.QHBoxLayout()
-        self.button = QtGui.QPushButton('Login')
 
+        # create large layouts
+        layout = QtGui.QVBoxLayout()
+
+        # build warning widgets
+        layout_warning = QtGui.QHBoxLayout()
+        layout_warning.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        self.label_Status = QtGui.QLabel('Root Paths Exist: True')
+        self.btn_Resolve = QtGui.QPushButton('Resolve')
+        self.btn_Resolve.pressed.connect(lambda: self.resolveRootPaths(path_results))
+        self.btn_Resolve.setVisible(False)
+
+        layout_warning.addWidget(self.label_Status)
+        layout_warning.addWidget(self.btn_Resolve)
+        layout.addLayout(layout_warning)
+
+        # build show list
         self.list_shows = gui.HListWidget()
         self.shows = core.Environment().allShows()
 
         self.list_shows.addNewItems(self.shows)
 
-        layout.addWidget(self.button)
         layout.addWidget(self.list_shows)
 
+        # Build action buttons
+        layout_Cmd = QtGui.QHBoxLayout()
+        self.btn_Login = QtGui.QPushButton('Login')
+        self.btn_Login.clicked.connect(self.parent().login)
+        self.btn_AddShow = QtGui.QPushButton('Add Show')
+        self.btn_AddShow.clicked.connect(self.addShow)
+
+        layout_Cmd.addWidget(self.btn_Login)
+        layout_Cmd.addWidget(self.btn_AddShow)
+        layout.addLayout(layout_Cmd)
+
         self.setLayout(layout)
-        self.button.clicked.connect(self.parent().login)
+
+        # Temporary to enable access to core functionality
+        self.tempEnv = core.Environment()
+        self.tempSetup = core.Setup(self.tempEnv)
+
+        path_results = self.tempSetup.checkRootPaths()
+        self.checkPaths(path_results)
+
+    def addShow(self):
+        text, result = QtGui.QInputDialog.getText(self, 'Create New Show', 'Show:')
+        if result:
+            self.tempSetup.setupShow(text)
+            return text
+
+    def checkPaths(self, paths_dict):
+        results = sum(paths_dict.values())
+        length = len(paths_dict)
+
+        self.label_Status.setText('Root Paths Exist: True')
+        self.btn_Resolve.setVisible(False)
+
+        if results < length:
+            self.label_Status.setText('Root Paths Exist: False')
+            self.btn_Resolve.setVisible(True)
 
     def getCurrent(self):
         curRow = self.list_shows.currentSelection()
         if curRow > -1:
             return self.shows[curRow]
         return None
+
+    def resolveRootPaths(self, paths_dict):
+        for key, value in paths_dict.iteritems():
+            print key, value
+            if value is False:
+                title = 'Set %s Path' % key.upper()
+                path = QtGui.QFileDialog.getExistingDirectory(self, str(title))
+                if path:
+                    self.tempSetup.setRootSetting(['paths', key], path)
+                    print path
+                    self.checkPaths(self.tempSetup.checkRootPaths())
+                    return path
+                return None
 
 
 class LoggedWidget(QtGui.QWidget):
@@ -42,9 +102,6 @@ class LoggedWidget(QtGui.QWidget):
         self.env = core.Environment()
         self.setup = core.Setup(self.env)
         self.env.setShow(self.show)
-
-        path_results = self.setup.checkRootPaths()
-        self.checkPaths(path_results)
 
         self.sequences = self.env.sequences()
         self.shots = self.env.shots(self.sequences[0])
@@ -96,22 +153,6 @@ class LoggedWidget(QtGui.QWidget):
         wrapper.addLayout(gui.TitleLine(self.env.SHOW, self.env.currentUser()))
         wrapper.addLayout(layout)
         self.setLayout(wrapper)
-
-    def checkPaths(self, paths_dict):
-        for key, value in paths_dict.iteritems():
-            print key, value
-            if value is False:
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText('The %s path does not exist. Please select a valid path.' % key.upper())
-                msgBox.exec_()
-
-                title = 'Set %s Path' % key.upper()
-                path = QtGui.QFileDialog.getExistingDirectory(self, str(title))
-                if path:
-                    self.setup.setRootSetting(['paths', key], path)
-                    print path
-                    return path
-                return None
 
     def currentShot(self):
         curSeq = self.list_seq.currentSelection()

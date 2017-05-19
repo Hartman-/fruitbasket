@@ -3,43 +3,11 @@ import glob
 import os
 import platform
 import psutil
+import shutil
 import sys
 import subprocess
 
 import configparser as config
-
-'''
-- Simply pass the env variables in a list with the Popen
-
-thinking about structuring the pipe as a Proj in PROJ
-
-SHOW
-    > _production
-        > DELIVERABLES
-        > HOUDINI
-        > NUKE
-        > EDIT
-        > SHOTS
-            > SEQ
-                > SHOT
-                    > NUKE
-                    > HOUDINI
-                    > MAYA
-                        > When the user saves, give them the option of stage (layout, anim, lighting, render, etc)
-                        > Two tag system, one denotes the stage (integer value, pulled from defintions file), other identifies contents (ex. ABC_010_anim_blockIn_v0001_imh29.ma
-        > SOURCE
-            > PLATES
-            > ELEMENTS
-        > LIBRARY
-            > CATEGORIES
-        > PUBLISHED
-            > SEQ
-                > SHOT
-                    > NUKE
-                    > HOUDINI
-                    > MAYA
-    > OTHER
-'''
 
 
 class Setup(object):
@@ -88,6 +56,15 @@ class Setup(object):
         for rel_path in rel_paths:
             full_path = os.path.join(show_path, rel_path)
             config.createDir(full_path)
+
+    def setupShow(self, show):
+        default_name = 'folders.default.json'
+        default_path = config.fullJsonPath(default_name)
+
+        new_name = 'folders.%s.json' % str(show).lower()
+        new_path = config.fullJsonPath(new_name)
+
+        shutil.copy(default_path, new_path)
 
     def setShowApps(self, show, show_data=None):
         # base string, need to add application name to complete the reference
@@ -258,12 +235,18 @@ class Environment(object):
         return shows
 
     def sequences(self):
-        seqs = sorted(config.sequences())
+        seqs = sorted(config.sequences(self.SHOW))
         return seqs
 
     def shots(self, seq):
-        shots = sorted(config.shots(seq))
+        shots = sorted(config.shots(self.SHOW, seq))
         return shots
+
+    def addShot(self, seq, shot):
+        key_path = ['definitions', 'sequences', str(seq).lower(), str(shot).lower(), "$ref"]
+        value = '#/definitions/shotfolders'
+        json_filename = 'folders.%s.json' % str(self.SHOW).lower()
+        config.updateJson(key_path, value, filename=json_filename, resolveRef=False)
 
     def applicationSettings(self, app):
         settings = config.applicationSettings(app, show=self.SHOW)
@@ -431,9 +414,9 @@ class Application(object):
 
 if __name__ == "__main__":
     environment = Environment()
-
-    setup = Setup(environment)
-    setup.setShowApps('TESTSHOW')
+    environment.addShot('tlc', '010')
+    # setup = Setup(environment)
+    # setup.setShowApps('TESTSHOW')
     # setup.createBaseStructure(server=False)
     #
     # app_maya = Maya(environment)

@@ -26,6 +26,20 @@
             "abc": {
                 "010": {
                     "$ref": "#/definitions/shotfolders"
+                },
+                "020": {
+                    "$ref": "#/definitions/shotfolders"
+                }
+            },
+            "def": {
+                "010": {
+                    "$ref": "#/definitions/shotfolders"
+                },
+                "020": {
+                    "$ref": "#/definitions/shotfolders"
+                },
+                "030": {
+                    "$ref": "#/definitions/shotfolders"
                 }
             }
         },

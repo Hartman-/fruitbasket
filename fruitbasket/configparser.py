@@ -65,7 +65,7 @@ def updateJson(key_path, input_data, filename='configuration.json', resolveRef=T
 
     file_path = fullJsonPath(filename)
 
-    tmp_json = readJson(resolveReferences=resolveRef)
+    tmp_json = readJson(filename=filename, resolveReferences=resolveRef)
     nested_set(tmp_json, key_path, input_data)
 
     with open(file_path, "w") as json_file:
@@ -106,13 +106,17 @@ def rootSettings(includePath=False, resolveRef=True):
     return data
 
 
-def sequences(resolveRef=False):
-    json_data = readJson(filename="folders.default.json", resolveReferences=resolveRef)
+def sequences(show, resolveRef=False):
+    json_filename = 'folders.%s.json' % str(show).lower()
+
+    json_data = readJson(filename=json_filename, resolveReferences=resolveRef)
     return json_data['definitions']['sequences'].keys()
 
 
-def shots(sequence, resolveRef=False):
-    json_data = readJson(filename="folders.default.json", resolveReferences=resolveRef)
+def shots(show, sequence, resolveRef=False):
+    json_filename = 'folders.%s.json' % str(show).lower()
+
+    json_data = readJson(filename=json_filename, resolveReferences=resolveRef)
     return json_data['definitions']['sequences'][str(sequence)].keys()
 
 # ----------------------------------------------------------------------------------------------------
@@ -201,6 +205,3 @@ def folderPaths(json_data):
         all_paths.append(rel_path)
 
     return all_paths
-
-if __name__ == "__main__":
-    print supportedApplications('HONU')
