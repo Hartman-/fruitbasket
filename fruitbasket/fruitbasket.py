@@ -118,7 +118,7 @@ class LoggedWidget(QtGui.QWidget):
         self.list_seq = gui.HListWidget()
         self.list_seq.addNewItems(self.sequences)
         self.list_seq.setCurrentRow(0)
-        self.list_seq.currentRowChanged.connect(self.update)
+        self.list_seq.currentRowChanged.connect(self.updateShots)
         sel_layout.addWidget(self.list_seq)
 
         self.list_shot = gui.HListWidget()
@@ -173,7 +173,15 @@ class LoggedWidget(QtGui.QWidget):
             # return [seq, None]
         # return [None, None]
 
-    def update(self, row):
+    def updateSeq(self):
+        self.list_seq.purgeList()
+        seq = self.env.sequences()
+        self.sequences = seq
+        self.list_seq.addNewItems(seq)
+        self.list_seq.setCurrentRow(0)
+        self.updateShots(0)
+
+    def updateShots(self, row):
         self.list_shot.purgeList()
         shots = self.env.shots(self.sequences[row])
         self.shots = shots
@@ -261,15 +269,15 @@ class MainWindow(QtGui.QMainWindow):
         action_Config.setStatusTip('Manage Config of Fruitbasket')
         action_Config.triggered.connect(self.openConfig)
 
-        action_SetShow = QtGui.QAction('&Set Show...', self)
-        action_SetShow.setStatusTip('Change the current show')
-        action_SetShow.triggered.connect(self.switchShow)
+        action_CreateShot = QtGui.QAction('&Create Shot...', self)
+        action_CreateShot.setStatusTip('Create Seq/Shot')
+        action_CreateShot.triggered.connect(self.openShot)
 
         menubar = self.menuBar()
         menu_File = menubar.addMenu('&File')
 
         menu_File.addAction(action_Config)
-        menu_File.addAction(action_SetShow)
+        menu_File.addAction(action_CreateShot)
         menu_File.addAction(action_Exit)
 
     def login(self):
@@ -278,6 +286,7 @@ class MainWindow(QtGui.QMainWindow):
             logged_in_widget = LoggedWidget(show, parent=self)
             self.central_widget.addWidget(logged_in_widget)
             self.central_widget.setCurrentWidget(logged_in_widget)
+            self.central_widget.currentWidget().setup.createBaseStructure()
 
     def logout(self):
         login_widget = self.central_widget.widget(0)
@@ -292,9 +301,16 @@ class MainWindow(QtGui.QMainWindow):
             if returncode:
                 print 'good'
 
-    def switchShow(self):
+    def openShot(self):
         if hasattr(self.central_widget.currentWidget(), 'env'):
-            self.central_widget.currentWidget().env.SHOW = 'TESTSHOW'
+            modal = gui.modal_CreateShot()
+            retcode = modal.exec_()
+            if retcode:
+                values = modal.getValues()
+                if values is not None:
+                    self.central_widget.currentWidget().env.addShot(values[0], values[1])
+                    self.central_widget.currentWidget().updateSeq()
+                    self.central_widget.currentWidget().setup.createBaseStructure()
 
 if __name__ == "__main__":
 

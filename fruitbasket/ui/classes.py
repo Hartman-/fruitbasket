@@ -81,6 +81,55 @@ class modal_ApplicationInfo(QtGui.QDialog):
                 line_item.input.setText(fpath[0])
 
 
+class modal_CreateShot(QtGui.QDialog):
+
+    def __init__(self, parent=None):
+        super(modal_CreateShot, self).__init__(parent)
+
+        layout = QtGui.QVBoxLayout()
+
+        seq_layout = QtGui.QHBoxLayout()
+        shot_layout = QtGui.QHBoxLayout()
+
+        label_Seq = QtGui.QLabel('Sequence:')
+        label_Shot = QtGui.QLabel('Shot:')
+
+        self.input_Seq = QtGui.QLineEdit()
+        self.input_Shot = QtGui.QLineEdit()
+
+        seq_layout.addWidget(label_Seq)
+        seq_layout.addWidget(self.input_Seq)
+
+        shot_layout.addWidget(label_Shot)
+        shot_layout.addWidget(self.input_Shot)
+
+        cmd_layout = QtGui.QHBoxLayout()
+        cmd_layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
+
+        btn_Accept = QtGui.QPushButton('Accept')
+        btn_Accept.clicked.connect(self.submitClose)
+        btn_Cancel = QtGui.QPushButton('Cancel')
+        btn_Cancel.clicked.connect(self.close)
+
+        cmd_layout.addWidget(btn_Accept)
+        cmd_layout.addWidget(btn_Cancel)
+
+        layout.addLayout(seq_layout)
+        layout.addLayout(shot_layout)
+        layout.addLayout(cmd_layout)
+
+        self.setLayout(layout)
+        self.setWindowTitle('Create Shot')
+
+    def submitClose(self):
+        self.accept()
+
+    def getValues(self):
+        if self.input_Seq != '' and self.input_Shot != '':
+            return [self.input_Seq.text(), self.input_Shot.text()]
+        return None
+
+
 class TitleLine(QtGui.QHBoxLayout):
     def __init__(self, show, user, parent=None):
         super(TitleLine, self).__init__(parent)

@@ -46,12 +46,15 @@ class Setup(object):
         config.updateJson(key_path, value, resolveRef=False)
 
     def createBaseStructure(self, server=True):
-        root = environment.rootserver()
+        root = self.env.rootserver()
         if server is not True:
-            root = environment.rootlocal()
+            root = self.env.rootlocal()
 
         show_path = os.path.join(root, self.env.SHOW)
-        data = config.readJson('folders.default.json')
+
+        json_str = 'folders.%s.json' % self.env.SHOW
+
+        data = config.readJson(json_str)
         rel_paths = config.folderPaths(data)
         for rel_path in rel_paths:
             full_path = os.path.join(show_path, rel_path)
@@ -417,7 +420,6 @@ class Application(object):
 
 if __name__ == "__main__":
     environment = Environment()
-    environment.addShot('tlc', '010')
     # setup = Setup(environment)
     # setup.setShowApps('TESTSHOW')
     # setup.createBaseStructure(server=False)

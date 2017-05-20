@@ -1,27 +1,10 @@
 {
-    "_production":{
-        "deliverables": {
-            "_final": "",
-            "dailies": ""
-        },
-        "houdini": "",
-        "nuke": "",
-        "edit": "",
-        "shots": {
-            "$ref": "#/definitions/sequences"
-        },
-        "source": {
-            "plates": "",
-            "elements": ""
-        },
-        "library": {
-            "categories": ""
-        },
-        "published":{
-            "$ref": "#/definitions/sequences"
-        }
-    },
     "definitions": {
+        "shotfolders": {
+            "nuke": "",
+            "maya": "",
+            "houdini": ""
+        },
         "sequences": {
             "abc": {
                 "010": {
@@ -35,18 +18,35 @@
                 "010": {
                     "$ref": "#/definitions/shotfolders"
                 },
-                "020": {
+                "030": {
                     "$ref": "#/definitions/shotfolders"
                 },
-                "030": {
+                "020": {
                     "$ref": "#/definitions/shotfolders"
                 }
             }
-        },
-        "shotfolders": {
-            "houdini": "",
-            "maya": "",
-            "nuke": ""
         }
+    },
+    "_production": {
+        "nuke": "",
+        "edit": "",
+        "library": {
+            "categories": ""
+        },
+        "source": {
+            "plates": "",
+            "elements": ""
+        },
+        "deliverables": {
+            "dailies": "",
+            "_final": ""
+        },
+        "shots": {
+            "$ref": "#/definitions/sequences"
+        },
+        "published": {
+            "$ref": "#/definitions/sequences"
+        },
+        "houdini": ""
     }
 }
