@@ -129,6 +129,8 @@ class LoggedWidget(QtGui.QWidget):
         sel_wrapper.addLayout(sel_layout)
         self.btn_launch = QtGui.QPushButton('Launch')
         self.btn_launch.clicked.connect(self.currentShot)
+        self.btn_NewFile = QtGui.QPushButton('Create New...')
+        sel_wrapper.addWidget(self.btn_NewFile)
         sel_wrapper.addWidget(self.btn_launch)
 
         grp_Selection.addLayout(sel_wrapper)
@@ -182,6 +184,12 @@ class LoggedWidget(QtGui.QWidget):
         self.updateShots(0)
 
     def updateShots(self, row):
+        '''
+        updateShots
+        
+        :param row: 
+        :return: 
+        '''
         self.list_shot.purgeList()
         shots = self.env.shots(self.sequences[row])
         self.shots = shots
