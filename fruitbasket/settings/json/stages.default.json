@@ -1,0 +1,37 @@
+{
+    "previs": {
+        "name": "Previs",
+        "id": 0,
+        "app": "maya"
+    },
+    "layout": {
+        "name": "Layout",
+        "id": 1,
+        "app": "maya"
+    },
+    "animation": {
+        "name": "Animation",
+        "id": 2,
+        "app": "maya"
+    },
+    "fx": {
+        "name": "FX",
+        "id": 3,
+        "app": "houdini"
+    },
+    "lighting": {
+        "name": "Lighting",
+        "id": 4,
+        "app": "maya"
+    },
+    "comp": {
+        "name": "Comp",
+        "id": 5,
+        "app": "nuke"
+    },
+    "render": {
+        "name": "Render",
+        "id": 99,
+        "app": "maya"
+    }
+}

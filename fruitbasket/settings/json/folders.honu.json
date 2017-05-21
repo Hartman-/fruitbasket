@@ -1,9 +1,15 @@
 {
     "definitions": {
         "shotfolders": {
-            "nuke": "",
-            "maya": "",
-            "houdini": ""
+            "nuke": {
+                "$ref": "#/definitions/project/nuke"
+            },
+            "maya": {
+                "$ref": "#/definitions/project/maya"
+            },
+            "houdini": {
+                "$ref": "#/definitions/project/houdini"
+            }
         },
         "sequences": {
             "abc": {
@@ -25,6 +31,27 @@
                     "$ref": "#/definitions/shotfolders"
                 }
             }
+        },
+        "project": {
+            "maya": {
+                "assets": "",
+                "cache": "",
+                "data": "",
+                "images": "",
+                "movies": "",
+                "renderData": "",
+                "scenes": "",
+                "scripts": "",
+                "sound": "",
+                "sourceimages": ""
+            },
+            "houdini": {
+                "geo": "",
+                "render": "",
+                "tex": "",
+                "scripts": ""
+            },
+            "nuke": {}
         }
     },
     "_production": {

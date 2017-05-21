@@ -34,5 +34,26 @@
             "maya": "",
             "nuke": ""
         }
-    }
+    },
+        "project": {
+            "maya": [
+                "assets",
+                "cache",
+                "data",
+                "images",
+                "movies",
+                "renderData",
+                "scenes",
+                "scripts",
+                "sound",
+                "sourceimages"
+            ],
+            "houdini": [
+                "geo",
+                "render",
+                "tex",
+                "scripts"
+            ],
+            "nuke": []
+        }
 }

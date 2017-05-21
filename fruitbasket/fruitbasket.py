@@ -128,8 +128,9 @@ class LoggedWidget(QtGui.QWidget):
 
         sel_wrapper.addLayout(sel_layout)
         self.btn_launch = QtGui.QPushButton('Launch')
-        self.btn_launch.clicked.connect(self.currentShot)
+        self.btn_launch.clicked.connect(self.launchFile)
         self.btn_NewFile = QtGui.QPushButton('Create New...')
+        self.btn_NewFile.clicked.connect(self.updateTags)
         sel_wrapper.addWidget(self.btn_NewFile)
         sel_wrapper.addWidget(self.btn_launch)
 
@@ -141,13 +142,14 @@ class LoggedWidget(QtGui.QWidget):
         self.chk_UseUsername = QtGui.QCheckBox('Username')
         filter_wrapper.addWidget(self.chk_UseUsername)
 
-        self.filter_stages = gui.HLineItem('Stage', ['dicks', 'booty'], inputtype='list', width=40)
-        self.filter_tags = gui.HLineItem('Tag', ['dicks', 'titssobigthatyoumamadied'], inputtype='list', width=40)
+        self.filter_stages = gui.HLineItem('Stage', ['option 01', 'option 02'], inputtype='list', width=40)
+        self.filter_tags = gui.HLineItem('Tag', ['option 03', 'option 04'], inputtype='list', width=40)
 
         self.list_filters = gui.HLineList([self.filter_stages, self.filter_tags])
         filter_wrapper.addLayout(self.list_filters)
 
         grp_Filters.addLayout(filter_wrapper)
+        self.updateStages()
 
         layout_Cmd = QtGui.QHBoxLayout()
         layout_Cmd.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
@@ -163,17 +165,27 @@ class LoggedWidget(QtGui.QWidget):
         wrapper.addLayout(layout_Cmd)
         self.setLayout(wrapper)
 
-    def currentShot(self):
+    def launchFile(self):
         curSeq = self.list_seq.currentSelection()
         curShot = self.list_shot.currentSelection()
         if curSeq > -1:
             seq = self.sequences[curSeq]
+            self.env.SEQ = seq
+
             if curShot > -1:
                 shot = self.shots[curShot]
-                print '%s-%s' % (seq, shot)
-                # return [seq, shot]
-            # return [seq, None]
-        # return [None, None]
+                self.env.SHOT = shot
+
+                stage_data = self.currentStage()
+                curStage = stage_data[0]
+                curApp = stage_data[1]
+                app = core.Application(self.env, curApp, 1111)
+                app.getFile(stage=curStage)
+                app.run()
+
+                return [seq, shot]
+            return [seq, None]
+        return [None, None]
 
     def updateSeq(self):
         self.list_seq.purgeList()
@@ -184,17 +196,30 @@ class LoggedWidget(QtGui.QWidget):
         self.updateShots(0)
 
     def updateShots(self, row):
-        '''
-        updateShots
-        
-        :param row: 
-        :return: 
-        '''
         self.list_shot.purgeList()
         shots = self.env.shots(self.sequences[row])
         self.shots = shots
         self.list_shot.addNewItems(shots)
         self.list_shot.setCurrentRow(0)
+
+    def updateStages(self):
+        self.filter_stages.list.clear()
+        stages = self.env.stages()
+        for stage in stages:
+            stage_str = '%s-%s' % (stage['id'], stage['name'])
+            self.filter_stages.list.addItem(stage_str)
+
+    def currentStage(self):
+        curStage = self.filter_stages.list.currentText()
+        index = curStage.split('-')[0]
+
+        stages = self.env.stages()
+        curApp = stages[int(index)]['app']
+
+        return [int(index), curApp]
+
+    def updateTags(self):
+        self.currentStage()
 
 
 class SettingsWindow(QtGui.QDialog):

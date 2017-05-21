@@ -3,6 +3,7 @@ import collections
 import json
 import jsonschema
 import jsonref
+from operator import itemgetter
 import os
 import pprint
 
@@ -205,3 +206,7 @@ def folderPaths(json_data):
         all_paths.append(rel_path)
 
     return all_paths
+
+if __name__ == "__main__":
+    json_data = readJson('stages.honu.json')
+    print sorted(json_data.values(), key=itemgetter('id'))

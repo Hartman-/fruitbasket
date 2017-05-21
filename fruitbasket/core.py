@@ -1,5 +1,6 @@
 import getpass
 import glob
+from operator import itemgetter
 import os
 import platform
 import psutil
@@ -9,6 +10,21 @@ import subprocess
 
 import configparser as config
 
+'''
+Name parts... 
+   [SHOW]: Show
+    [SEQ]: Sequence
+   [SHOT]: Shot
+  [STAGE]: Stage (integer)
+    [TAG]: Description Tag
+[VERSION]: Version (v0001, always padding 4)
+   [USER]: Username
+    [EXT]: File extension
+Common Naming conventions...
+
+- Working Scene file:
+[SEQ]_[SHOT]_[TAG]_[STAGE]_[VERSION]_[USER].[EXT]
+'''
 
 class Setup(object):
     def __init__(self, environment):
@@ -258,6 +274,14 @@ class Environment(object):
         settings = config.applicationSettings(app, show=self.SHOW)
         return settings
 
+    def stages(self):
+        stage_str = 'stages.%s.json' % self.SHOW
+
+        json_data = config.readJson(stage_str)
+        stage_list = sorted(json_data.values(), key=itemgetter('id'))
+
+        return stage_list
+
 
 class Application(object):
 
@@ -296,7 +320,9 @@ class Application(object):
             print('NO FILE SIR')
 
     def getFile(self, stage='', tag=''):
-        base_directory = environment.shotdirectory(show=environment.SHOW, seq=environment.SEQ, shot=environment.SHOT)
+        base_directory = self.environment.shotdirectory(show=self.environment.SHOW,
+                                                        seq=self.environment.SEQ,
+                                                        shot=self.environment.SHOT)
 
         latestFiles = []
 
@@ -310,8 +336,10 @@ class Application(object):
                 stage_string = '_%s' % stage
 
             searchString = '*%s%s_*%s' % (stage_string, tag_string, file_type)
-            searchPath = os.path.join(base_directory, self.app, searchString)
-            print searchPath
+            searchPath = os.path.join(base_directory, self.app)
+            if self.app == 'maya':
+                searchPath = os.path.join(searchPath, 'scenes')
+            searchPath = os.path.join(searchPath, searchString)
 
             files = list(glob.iglob(searchPath))
             if files:
@@ -321,6 +349,7 @@ class Application(object):
         if latestFiles:
             latest = max(latestFiles, key=os.path.getmtime)
             print latest
+            self.file = latest
 
     def setversion(self, version=None):
         if version is not None:
@@ -356,17 +385,16 @@ class Application(object):
             self.rids.append(sid)
 
         cenv = os.environ.copy()
-        print sid
         cenv['HASH'] = str(sid)
 
         show_str = self.environment.envstr('SHOW')
-        cenv[show_str] = self.environment.SHOW
+        cenv[show_str] = str(self.environment.SHOW)
 
         seq_str = self.environment.envstr('SEQ')
-        cenv[seq_str] = self.environment.SEQ
+        cenv[seq_str] = str(self.environment.SEQ)
 
         shot_str = self.environment.envstr('SHOT')
-        cenv[shot_str] = self.environment.SHOT
+        cenv[shot_str] = str(self.environment.SHOT)
 
         args = self.args()
         if args:
@@ -420,7 +448,8 @@ class Application(object):
 
 if __name__ == "__main__":
     environment = Environment()
-    # setup = Setup(environment)
+    setup = Setup(environment)
+    setup.createBaseStructure()
     # setup.setShowApps('TESTSHOW')
     # setup.createBaseStructure(server=False)
     #
