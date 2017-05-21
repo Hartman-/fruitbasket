@@ -333,7 +333,7 @@ class Application(object):
             if tag is not '':
                 tag_string = '_%s' % tag
             if stage is not '':
-                stage_string = '_%s' % stage
+                stage_string = '_st%s' % stage
 
             searchString = '*%s%s_*%s' % (stage_string, tag_string, file_type)
             searchPath = os.path.join(base_directory, self.app)
@@ -350,6 +350,47 @@ class Application(object):
             latest = max(latestFiles, key=os.path.getmtime)
             print latest
             self.file = latest
+            return latest
+        return None
+
+    def getFileDate(self, file_path):
+        if platform.system() == 'Windows':
+            return os.path.getmtime(file_path)
+        else:
+            stat = os.stat(file_path)
+            try:
+                return stat.st_birthtime
+            except AttributeError:
+                # We're probably on Linux. No easy way to get creation dates here,
+                # so we'll settle for when its content was last modified.
+                return stat.st_mtime
+
+    def tags(self, stage):
+        all_files = []
+        tags = []
+        base_directory = self.environment.shotdirectory(show=self.environment.SHOW,
+                                                        seq=self.environment.SEQ,
+                                                        shot=self.environment.SHOT)
+        for file_type in self.fileTypes():
+            stage_str = '_st%s' % stage
+            search_str = '*%s*%s' % (stage_str, file_type)
+
+            search_path = os.path.join(base_directory, self.app)
+            if self.app == 'maya':
+                search_path = os.path.join(search_path, 'scenes')
+            search_path = os.path.join(search_path, search_str)
+
+            files = list(glob.iglob(search_path))
+            all_files += files
+
+        for index, file_path in enumerate(all_files):
+            filename = os.path.basename(file_path)
+            name_parts = filename.split('_')
+            if len(name_parts) > 4:
+                tags.append(name_parts[3])
+
+        distict_tags = set(tags)
+        return distict_tags
 
     def setversion(self, version=None):
         if version is not None:

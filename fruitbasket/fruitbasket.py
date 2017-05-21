@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import subprocess
-import platform
+from datetime import datetime
 import os
 import sys
 
@@ -118,7 +117,7 @@ class LoggedWidget(QtGui.QWidget):
         self.list_seq = gui.HListWidget()
         self.list_seq.addNewItems(self.sequences)
         self.list_seq.setCurrentRow(0)
-        self.list_seq.currentRowChanged.connect(self.updateShots)
+        self.list_seq.currentRowChanged.connect(self.updateSeq)
         sel_layout.addWidget(self.list_seq)
 
         self.list_shot = gui.HListWidget()
@@ -149,7 +148,9 @@ class LoggedWidget(QtGui.QWidget):
         filter_wrapper.addLayout(self.list_filters)
 
         grp_Filters.addLayout(filter_wrapper)
-        self.updateStages()
+
+        self.title_ModifyDate = QtGui.QLabel('Last Modified:')
+        self.label_ModifyDate = QtGui.QLabel('DATE GOES HERE')
 
         layout_Cmd = QtGui.QHBoxLayout()
         layout_Cmd.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
@@ -158,12 +159,24 @@ class LoggedWidget(QtGui.QWidget):
         layout_Cmd.addWidget(self.btn_Logout)
 
         layout.addWidget(grp_Selection)
-        layout.addWidget(grp_Filters)
+
+        layout_right = QtGui.QVBoxLayout()
+        layout_right.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        layout_right.addWidget(grp_Filters)
+        layout_right.addWidget(self.title_ModifyDate)
+        layout_right.addWidget(self.label_ModifyDate)
+
+        layout.addLayout(layout_right)
 
         wrapper.addLayout(gui.TitleLine(self.env.SHOW, self.env.currentUser()))
         wrapper.addLayout(layout)
         wrapper.addLayout(layout_Cmd)
+
         self.setLayout(wrapper)
+
+        self.updateStages()
+        self.update()
+        # self.list_shot.currentRowChanged.connect(self.update)
 
     def launchFile(self):
         curSeq = self.list_seq.currentSelection()
@@ -177,12 +190,25 @@ class LoggedWidget(QtGui.QWidget):
                 self.env.SHOT = shot
 
                 stage_data = self.currentStage()
+                tag_data = 'None'
+
                 curStage = stage_data[0]
                 curApp = stage_data[1]
                 app = core.Application(self.env, curApp, 1111)
-                app.getFile(stage=curStage)
-                app.run()
+                latest_file = app.getFile(stage=curStage)
 
+                # If file is found
+                if latest_file:
+                    app.run()
+                    return [seq, shot]
+
+                # No file operations
+                print 'No file found for %s-%s [Stage: %s, Tag: %s]' % (
+                    self.env.SEQ,
+                    self.env.SHOT,
+                    curStage,
+                    'None'
+                )
                 return [seq, shot]
             return [seq, None]
         return [None, None]
@@ -202,12 +228,16 @@ class LoggedWidget(QtGui.QWidget):
         self.list_shot.addNewItems(shots)
         self.list_shot.setCurrentRow(0)
 
+        self.update()
+
     def updateStages(self):
         self.filter_stages.list.clear()
         stages = self.env.stages()
         for stage in stages:
             stage_str = '%s-%s' % (stage['id'], stage['name'])
             self.filter_stages.list.addItem(stage_str)
+
+        self.updateTags()
 
     def currentStage(self):
         curStage = self.filter_stages.list.currentText()
@@ -218,8 +248,48 @@ class LoggedWidget(QtGui.QWidget):
 
         return [int(index), curApp]
 
+    def currentTag(self):
+        curTag = self.filter_tags.list.currentText()
+        return curTag
+
+    def update(self):
+        self.env.SEQ = self.sequences[self.list_seq.currentSelection()]
+        self.env.SHOT = self.shots[self.list_shot.currentSelection()]
+
+        self.updateTags()
+        self.updateModified()
+
     def updateTags(self):
-        self.currentStage()
+        stage_data = self.currentStage()
+
+        curStage = stage_data[0]
+        curApp = stage_data[1]
+
+        tmpApp = core.Application(self.env, curApp, 1111)
+        all_tags = tmpApp.tags(curStage)
+
+        self.filter_tags.list.clear()
+        for tag in all_tags:
+            self.filter_tags.list.addItem(tag)
+
+    def updateModified(self):
+        stage_data = self.currentStage()
+
+        curStage = stage_data[0]
+        curApp = stage_data[1]
+        curTag = self.currentTag()
+
+        tmpApp = core.Application(self.env, curApp, 1111)
+        latest_file = tmpApp.getFile(stage=curStage, tag=curTag)
+        if latest_file:
+            modTime = tmpApp.getFileDate(latest_file)
+            a = datetime.fromtimestamp(modTime).strftime("%Y-%m-%d %H:%M:%S")
+            print 'Time: %s' % a
+            self.label_ModifyDate.setText(a)
+            return a
+
+        self.label_ModifyDate.setText('No Recent File')
+        return None
 
 
 class SettingsWindow(QtGui.QDialog):
