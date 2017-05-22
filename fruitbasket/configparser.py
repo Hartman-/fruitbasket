@@ -1,11 +1,9 @@
 import ConfigParser
 import collections
 import json
-import jsonschema
 import jsonref
 from operator import itemgetter
 import os
-import pprint
 
 # Configuration files will always be relative to the parser file
 # Instead of attemping to find the path settings/application.conf relative to the file that made the call
@@ -20,6 +18,12 @@ for i, f in enumerate(CONFIG_FILES):
 
 
 def fullJsonPath(filename):
+    """
+    Returns the full path to the input json file.
+
+    :param filename: Input file name.
+    :return: String, Full path.
+    """
     return os.path.join(settingspath, 'json', filename)
 
 # ----------------------------------------------------------------------------------------------------
@@ -27,8 +31,13 @@ def fullJsonPath(filename):
 # ----------------------------------------------------------------------------------------------------
 
 
-# need to figure out how to use the jsonschema reference resolver
 def readJson(filename='configuration.json', resolveReferences=True):
+    """
+    Reads the input json file (defaults to configuration.json) and returns the data.
+    :param filename: Name of file to read.
+    :param resolveReferences: Resolve json refs, defaults to True.
+    :return: Return json data.
+    """
     if os.path.splitext(filename)[1] != '.json':
         filename = filename + '.json'
 
@@ -51,16 +60,27 @@ def readJson(filename='configuration.json', resolveReferences=True):
 # THANKS STACK OVERFLOW
 # http://stackoverflow.com/questions/13687924/setting-a-value-in-a-nested-python-dictionary-given-a-list-of-indices-and-value
 def nested_set(dic, keys, value):
+    """
+    Sets the value in a nested dictionary, given a list path of keys.
+    :param dic: Base dictionary in which to set the value.
+    :param keys: Key path leading to the key to set value for.
+    :param value: Value to set.
+    :return: None.
+    """
     for key in keys[:-1]:
         dic = dic.setdefault(key, {})
     dic[keys[-1]] = value
 
 
-# Parameters:
-#   - key_path: input list of keys that end with the key for the data you wish to update
-#   - input_data: new value to update the key with
-#   - filename: json file to write to
 def updateJson(key_path, input_data, filename='configuration.json', resolveRef=True):
+    """
+    Update json settings file with the input data at the location pointed to by the key path.
+    :param key_path: Path of keys, ending with the key to set.
+    :param input_data: Value to set.
+    :param filename: File to set data for, defaults to configuration.json
+    :param resolveRef: Resolve references when reading the file, defaults to True.
+    :return: Edited json data.
+    """
     if os.path.splitext(filename)[1] != '.json':
         filename = filename + '.json'
 
@@ -74,6 +94,14 @@ def updateJson(key_path, input_data, filename='configuration.json', resolveRef=T
 
 
 def applicationSettings(app, show="default", includePath=False, resolveRef=True):
+    """
+    Returns the settings for given application, for given show.
+    :param app: The application for which to return application settings.
+    :param show: The show, uses default settings by default, to return settings for.
+    :param includePath: Include key path to the application data, defaults to False.
+    :param resolveRef: Resolve the references when reading the json file, defaults to True.
+    :return: json data of the application.
+    """
     json_data = readJson(resolveReferences=resolveRef)
     data = json_data[show]['apps'][app]
     key_path = [show, 'apps', app]
@@ -84,6 +112,14 @@ def applicationSettings(app, show="default", includePath=False, resolveRef=True)
 
 
 def supportedApplications(show="default", keys=True, includePath=False, resolveRef=True):
+    """
+    Returns the supported applications for the current show.
+    :param show: (Optional) Current show, defaults to 'default'
+    :param keys: Defines return type for the json data.
+    :param includePath: Include key path to the application data, defaults to False.
+    :param resolveRef: Resolve the references when reading the json file, defaults to True.
+    :return: If keys, returns list of application names, else returns application dictionary
+    """
     json_data = readJson(resolveReferences=resolveRef)
     if keys is True:
         data = json_data[show]['apps'].keys()
@@ -98,6 +134,12 @@ def supportedApplications(show="default", keys=True, includePath=False, resolveR
 
 
 def rootSettings(includePath=False, resolveRef=True):
+    """
+    Returns the root settings from the configuration.json file.
+    :param includePath: Include key path in the return data with the application data, defaults to False.
+    :param resolveRef: Resolve the references when reading the json file, defaults to True.
+    :return: Json data
+    """
     json_data = readJson(resolveReferences=resolveRef)
     data = json_data['default']['root']
     key_path = ['default', 'root']
@@ -108,6 +150,12 @@ def rootSettings(includePath=False, resolveRef=True):
 
 
 def sequences(show, resolveRef=False):
+    """
+    Returns the sequences for the current show.
+    :param show: Define what show to get sequences for.
+    :param resolveRef: Resolve the references when reading the json file, defaults to True.
+    :return: Returns list of sequences.
+    """
     json_filename = 'folders.%s.json' % str(show).lower()
 
     json_data = readJson(filename=json_filename, resolveReferences=resolveRef)
@@ -115,6 +163,13 @@ def sequences(show, resolveRef=False):
 
 
 def shots(show, sequence, resolveRef=False):
+    """
+    Returns the shots for the current show, sequence combination.
+    :param show: Define what show to get sequence/shot for.
+    :param sequence: Define the sequence.
+    :param resolveRef: Resolve the references when reading the json file, defaults to True.
+    :return: Returns list of shots.
+    """
     json_filename = 'folders.%s.json' % str(show).lower()
 
     json_data = readJson(filename=json_filename, resolveReferences=resolveRef)

@@ -1,16 +1,6 @@
-import getpass
-import glob
-from operator import itemgetter
-import os
-import platform
-import psutil
-import shutil
-import sys
-import subprocess
+"""
+# Thinking out Loud =====
 
-import configparser as config
-
-'''
 Name parts...
    [SHOW]: Show
     [SEQ]: Sequence
@@ -24,7 +14,27 @@ Common Naming conventions...
 
 - Working Scene file:
 [SEQ]_[SHOT]_[TAG]_[STAGE]_[VERSION]_[USER].[EXT]
-'''
+
+# Core =====
+
+This module defines core classes to handle operations of setting up the application, environment, and launching into applications.
+- class: Setup
+- class: Environment
+- class: Application
+"""
+
+# Import python libraries / modules
+import getpass
+import glob
+from operator import itemgetter
+import os
+import platform
+import psutil
+import shutil
+import subprocess
+
+# Import Fruitbasket modules
+import configparser as config
 
 
 class Setup(object):
@@ -701,20 +711,3 @@ if __name__ == "__main__":
     environment = Environment()
     setup = Setup(environment)
     setup.createBaseStructure()
-    # setup.setShowApps('TESTSHOW')
-    # setup.createBaseStructure(server=False)
-    #
-    # app_maya = Maya(environment)
-    # app_maya.getFile()
-    # app_maya.run()
-    # app_maya.run()
-    # app_hou = Application(environment, 'houdini', 1111)
-    # app_hou.instances()
-    # app_nuke = Nuke(environment)
-    # app_nuke.run()
-
-    # app_hou.run()
-
-    # app_hou.setfile("W:\\SRPJ_LAW\\houdini\\texturebaking.hipnc")
-    # print app_hou.args()
-    # print app_nuke.args()
