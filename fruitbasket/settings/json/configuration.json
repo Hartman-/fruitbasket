@@ -1,5 +1,11 @@
 {
     "default": {
+        "root": {
+            "paths": {
+                "local": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\local",
+                "server": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\server"
+            }
+        },
         "apps": {
             "nuke": {
                 "osx": "No/Path/Found",
@@ -33,12 +39,6 @@
                     ".hip",
                     ".hipnc"
                 ]
-            }
-        },
-        "root": {
-            "paths": {
-                "local": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\local",
-                "server": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\server"
             }
         }
     },

@@ -116,13 +116,15 @@ class Setup(object):
         :return: Name of Show.
         """
 
-        default_name = 'folders.default.json'
-        default_path = config.fullJsonPath(default_name)
+        default_files = ['folders.default.json', 'stages.default.json']
 
-        new_name = 'folders.%s.json' % str(show).lower()
-        new_path = config.fullJsonPath(new_name)
+        for default_file in default_files:
+            default_path = config.fullJsonPath(default_file)
 
-        shutil.copy(default_path, new_path)
+            new_name = default_file.replace('default', str(show).lower())
+            new_path = config.fullJsonPath(new_name)
+
+            shutil.copy(default_path, new_path)
 
         # Setup the show to use the default application settings
         self.setShowApps(show)

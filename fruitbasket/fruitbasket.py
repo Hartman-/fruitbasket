@@ -117,7 +117,7 @@ class LoggedWidget(QtGui.QWidget):
         self.list_seq = gui.HListWidget()
         self.list_seq.addNewItems(self.sequences)
         self.list_seq.setCurrentRow(0)
-        self.list_seq.currentRowChanged.connect(self.updateSeq)
+        self.list_seq.itemClicked.connect(self.updateShots)
         sel_layout.addWidget(self.list_seq)
 
         self.list_shot = gui.HListWidget()
@@ -128,7 +128,7 @@ class LoggedWidget(QtGui.QWidget):
         sel_wrapper.addLayout(sel_layout)
         self.btn_launch = QtGui.QPushButton('Launch')
         self.btn_launch.clicked.connect(self.launchFile)
-        self.btn_NewFile = QtGui.QPushButton('Create New...')
+        self.btn_NewFile = QtGui.QPushButton('Create New File...')
         self.btn_NewFile.clicked.connect(self.updateTags)
         sel_wrapper.addWidget(self.btn_NewFile)
         sel_wrapper.addWidget(self.btn_launch)
@@ -149,6 +149,11 @@ class LoggedWidget(QtGui.QWidget):
 
         grp_Filters.addLayout(filter_wrapper)
 
+        grp_Time = gui.GroupBox('File Details')
+        layout_time = QtGui.QVBoxLayout()
+        self.title_CurrentDate = QtGui.QLabel("Current Date/Time: ")
+        self.label_CurrentDate = QtGui.QLabel('DATE GOES HERE')
+
         self.title_ModifyDate = QtGui.QLabel('Last Modified:')
         self.label_ModifyDate = QtGui.QLabel('DATE GOES HERE')
 
@@ -163,9 +168,14 @@ class LoggedWidget(QtGui.QWidget):
         layout_right = QtGui.QVBoxLayout()
         layout_right.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         layout_right.addWidget(grp_Filters)
-        layout_right.addWidget(self.title_ModifyDate)
-        layout_right.addWidget(self.label_ModifyDate)
 
+        layout_right.addWidget(self.title_CurrentDate)
+        layout_right.addWidget(self.label_CurrentDate)
+        layout_time.addWidget(self.title_ModifyDate)
+        layout_time.addWidget(self.label_ModifyDate)
+        grp_Time.addLayout(layout_time)
+
+        layout_right.addWidget(grp_Time)
         layout.addLayout(layout_right)
 
         wrapper.addLayout(gui.TitleLine(self.env.SHOW, self.env.currentUser()))
@@ -176,7 +186,10 @@ class LoggedWidget(QtGui.QWidget):
 
         self.updateStages()
         self.update()
-        # self.list_shot.currentRowChanged.connect(self.update)
+        self.updateCurrentDate()
+
+        self.filter_stages.list.currentIndexChanged.connect(self.update)
+        self.filter_tags.list.currentIndexChanged.connect(self.updateModified)
 
     def launchFile(self):
         curSeq = self.list_seq.currentSelection()
@@ -213,15 +226,33 @@ class LoggedWidget(QtGui.QWidget):
             return [seq, None]
         return [None, None]
 
+    # Only called when adding a new shot
+    # Don't be dumb and try and call this when switching between sequences... Like I tried...
     def updateSeq(self):
-        self.list_seq.purgeList()
+        """
+        Updates the sequence list. 
+        :return: List of sequences
+        """
         seq = self.env.sequences()
+        self.list_seq.purgeList()
         self.sequences = seq
         self.list_seq.addNewItems(seq)
         self.list_seq.setCurrentRow(0)
         self.updateShots(0)
 
+        return self.sequences
+
     def updateShots(self, row):
+        """
+        Updates the shot list for the currently selected sequence. 
+        :param row: The row of the sequence to list the shots of
+        :return: List of shots
+        """
+        # itemClicked passes the QListWidgetItem into 'row' parameter
+        # Convert the item into the row integer
+        if type(row) is not int:
+            row = self.list_seq.row(row)
+
         self.list_shot.purgeList()
         shots = self.env.shots(self.sequences[row])
         self.shots = shots
@@ -229,8 +260,13 @@ class LoggedWidget(QtGui.QWidget):
         self.list_shot.setCurrentRow(0)
 
         self.update()
+        return self.shots
 
     def updateStages(self):
+        """
+        Updates the list of stages for the current show. 
+        :return: List of stages
+        """
         self.filter_stages.list.clear()
         stages = self.env.stages()
         for stage in stages:
@@ -238,6 +274,7 @@ class LoggedWidget(QtGui.QWidget):
             self.filter_stages.list.addItem(stage_str)
 
         self.updateTags()
+        return stages
 
     def currentStage(self):
         curStage = self.filter_stages.list.currentText()
@@ -251,6 +288,13 @@ class LoggedWidget(QtGui.QWidget):
     def currentTag(self):
         curTag = self.filter_tags.list.currentText()
         return curTag
+
+    def updateCurrentDate(self):
+        now = datetime.now()
+        time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        self.label_CurrentDate.setText(time_str)
+        return time_str
 
     def update(self):
         self.env.SEQ = self.sequences[self.list_seq.currentSelection()]
