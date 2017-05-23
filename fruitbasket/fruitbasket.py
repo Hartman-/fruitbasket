@@ -230,7 +230,7 @@ class LoggedWidget(QtGui.QWidget):
     # Don't be dumb and try and call this when switching between sequences... Like I tried...
     def updateSeq(self):
         """
-        Updates the sequence list. 
+        Updates the sequence list.
         :return: List of sequences
         """
         seq = self.env.sequences()
@@ -244,7 +244,7 @@ class LoggedWidget(QtGui.QWidget):
 
     def updateShots(self, row):
         """
-        Updates the shot list for the currently selected sequence. 
+        Updates the shot list for the currently selected sequence.
         :param row: The row of the sequence to list the shots of
         :return: List of shots
         """
@@ -264,7 +264,7 @@ class LoggedWidget(QtGui.QWidget):
 
     def updateStages(self):
         """
-        Updates the list of stages for the current show. 
+        Updates the list of stages for the current show.
         :return: List of stages
         """
         self.filter_stages.list.clear()
@@ -390,7 +390,12 @@ class SettingsWindow(QtGui.QDialog):
         modal = gui.modal_ApplicationInfo(sender.text(), settings, self.env.SHOW)
         returncode = modal.exec_()
         if returncode:
-            print modal.getValues()
+            settings = modal.getValues()
+
+            tmpSetup = core.Setup(self.env)
+            tmpSetup.setShowApps(self.env.SHOW, app=sender.text(), show_data=settings)
+
+            del tmpSetup
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -407,12 +412,12 @@ class MainWindow(QtGui.QMainWindow):
         self.show()
 
     def initMenuBar(self):
-        action_Exit = QtGui.QAction('&Exit', self)
+        action_Exit = QtGui.QAction('&Close', self)
         action_Exit.setShortcut('Ctrl-Q')
         action_Exit.setStatusTip('Exit Fruitbasket')
         action_Exit.triggered.connect(self.close)
 
-        action_Config = QtGui.QAction('&Settings...', self)
+        action_Config = QtGui.QAction('&Prefs...', self)
         action_Config.setStatusTip('Manage Config of Fruitbasket')
         action_Config.triggered.connect(self.openConfig)
 
@@ -429,11 +434,20 @@ class MainWindow(QtGui.QMainWindow):
 
     def login(self):
         show = self.central_widget.currentWidget().getCurrent()
+
+        tmpEnv = core.Environment()
+        tmpEnv.setShow(show)
+
+        tmpSetup = core.Setup(tmpEnv)
+        tmpSetup.createBaseStructure()
+
+        del tmpSetup
+        del tmpEnv
+
         if show is not None:
             logged_in_widget = LoggedWidget(show, parent=self)
             self.central_widget.addWidget(logged_in_widget)
             self.central_widget.setCurrentWidget(logged_in_widget)
-            self.central_widget.currentWidget().setup.createBaseStructure()
 
     def logout(self):
         login_widget = self.central_widget.widget(0)

@@ -24,7 +24,7 @@ class modal_ApplicationInfo(QtGui.QDialog):
         self.info_windowsPath.searchClicked.connect(
             lambda: self.openFileBrowser(self.info_windowsPath))
 
-        self.info_osxPath = HLineItem('OSX', str(self.app_data['osx']), inputtype='dir')
+        self.info_osxPath = HLineItem('OSX', str(self.app_data['darwin']), inputtype='dir')
         self.info_osxPath.searchClicked.connect(
             lambda: self.openFileBrowser(self.info_osxPath))
 
@@ -61,7 +61,7 @@ class modal_ApplicationInfo(QtGui.QDialog):
     def getValues(self):
         data = {
             "windows": self.info_windowsPath.input.text(),
-            "osx": self.info_osxPath.input.text(),
+            "darwin": self.info_osxPath.input.text(),
             "linux": self.info_linuxPath.input.text(),
             "version": self.info_version.input.text()
         }
@@ -180,7 +180,7 @@ class HLineItem(QtGui.QHBoxLayout):
             self.list = QtGui.QComboBox()
             self.list.setMaximumWidth(75)
             self.list.setStyleSheet('''*
-                QComboBox QAbstractItemView 
+                QComboBox QAbstractItemView
                 {
                     min-width: 150px;
                 }

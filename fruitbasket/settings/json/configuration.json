@@ -2,58 +2,58 @@
     "default": {
         "root": {
             "paths": {
-                "local": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\local",
-                "server": "C:\\Users\\imh29\\Desktop\\PIPEROOT\\server"
+                "local": "/Users/ianhartman/Desktop/root/local", 
+                "server": "/Users/ianhartman/Desktop/root/server"
             }
-        },
+        }, 
         "apps": {
             "nuke": {
-                "osx": "No/Path/Found",
-                "windows": "C:\\Program Files\\Nuke10.5v2\\Nuke10.5.exe",
-                "subversion": "2",
-                "version": "10.5",
-                "linux": "No/Path",
-                "rel_scenepath": "",
+                "windows": "C:\\Program Files\\Nuke10.5v2\\Nuke10.5.exe", 
+                "subversion": "2", 
+                "version": "10.5", 
+                "linux": "No/Path", 
+                "rel_scenepath": "", 
+                "darwin": "No/Path/Found", 
                 "filetypes": [
                     ".nk"
                 ]
-            },
+            }, 
             "maya": {
-                "osx": "No/Path/Found",
-                "windows": "C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\maya.exe",
-                "version": "2016.5",
-                "linux": "No/Path",
-                "rel_scenepath": "scenes",
+                "windows": "C:\\Program Files\\Autodesk\\Maya2016.5\\bin\\maya.exe", 
+                "version": "2016.5", 
+                "linux": "No/Path", 
+                "rel_scenepath": "scenes", 
+                "darwin": "No/Path/Found", 
                 "filetypes": [
-                    ".ma",
+                    ".ma", 
                     ".mb"
                 ]
-            },
+            }, 
             "houdini": {
-                "osx": "No/Path/Found",
-                "windows": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe",
-                "version": "15.5.673",
-                "linux": "No/Path",
-                "rel_scenepath": "",
+                "windows": "C:\\Program Files\\Side Effects Software\\Houdini 15.5.673\\bin\\houdinifx.exe", 
+                "version": "15.5.673", 
+                "linux": "No/Path", 
+                "rel_scenepath": "", 
+                "darwin": "No/Path/Found", 
                 "filetypes": [
-                    ".hip",
+                    ".hip", 
                     ".hipnc"
                 ]
             }
         }
-    },
+    }, 
     "HONU": {
         "apps": {
             "nuke": {
                 "$ref": "#/default/apps/nuke"
-            },
+            }, 
             "maya": {
                 "$ref": "#/default/apps/maya"
-            },
+            }, 
             "houdini": {
                 "$ref": "#/default/apps/houdini"
             }
-        },
+        }, 
         "id": 0
     }
 }

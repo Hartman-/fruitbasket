@@ -130,7 +130,7 @@ class Setup(object):
         self.setShowApps(show)
         return show
 
-    def setShowApps(self, show, show_data=None):
+    def setShowApps(self, show, app=None, show_data=None):
         """
         Sets values for applications. If show_data is left None, references default values.
 
